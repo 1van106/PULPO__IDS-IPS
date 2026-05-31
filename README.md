@@ -9,7 +9,7 @@
 ![pytest](https://img.shields.io/badge/pytest-0A9EDC?style=for-the-badge&logo=pytest&logoColor=white&labelColor=1a1a2e)
 ![Estado](https://img.shields.io/badge/Estado-ENTREGADO-2a9d8f?style=for-the-badge&labelColor=1a1a2e)
 
-*Normativa de Ciberseguridad · Master EUSA · Febrero 2026*
+*Master en Ciberseguridad · EUSA · Febrero 2026*
 
 </div>
 
