@@ -1,20 +1,15 @@
 <div align="center">
 
-```
-+---------------------------------------------------------------+
-|                                                               |
-|   L O G C L A S S I F I E R                                  |
-|   Sistema IDS basado en reglas                                |
-|   Normativa de Ciberseguridad  ·  Master EUSA  ·  Feb 2026   |
-|                                                               |
-+---------------------------------------------------------------+
-```
+# LogClassifier 🛡️
+### Sistema IDS basado en reglas
 
 ![Python](https://img.shields.io/badge/Python_3.9+-3776AB?style=for-the-badge&logo=python&logoColor=white&labelColor=1a1a2e)
 ![PyYAML](https://img.shields.io/badge/PyYAML-cc8800?style=for-the-badge&labelColor=1a1a2e)
 ![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white&labelColor=1a1a2e)
 ![pytest](https://img.shields.io/badge/pytest-0A9EDC?style=for-the-badge&logo=pytest&logoColor=white&labelColor=1a1a2e)
 ![Estado](https://img.shields.io/badge/Estado-ENTREGADO-2a9d8f?style=for-the-badge&labelColor=1a1a2e)
+
+*Normativa de Ciberseguridad · Master EUSA · Febrero 2026*
 
 </div>
 
@@ -24,53 +19,42 @@
 
 **LogClassifier** es un sistema de deteccion de intrusiones (**IDS**) basado en reglas, inspirado en Fail2Ban. Analiza ficheros de log en tiempo real, clasifica eventos mediante expresiones regulares definidas en YAML y ejecuta respuestas automaticas cuando se supera el umbral configurado: desde bloqueos via **iptables** hasta registros en fichero.
 
-> Proyecto final de la asignatura **Normativa de Ciberseguridad**
 > Autores: Jesús Martínez Montalvo · Iván Batista Herrero · Fernando Manuel Ávila Medina
-> Profesor: Carlos Basulto — Febrero 2026
+> Profesor: Carlos Basulto
 
 ---
 
 ## Pipeline de deteccion
 
 ```
-+-------------+     +---------------+     +---------------+
-|             |     |               |     |               |
-|   logs/     +---->+   Ingesta     +---->+  Motor Reglas |
-|  *.log      |     |  (tail RT)    |     |  (regex/YAML) |
-|             |     |               |     |               |
-+-------------+     +---------------+     +-------+-------+
-                                                  |
-                                          match + IP extraida
-                                                  |
-                                          +-------v-------+
-                                          |               |
-                                          |  Correlacion  |
-                                          | (ventana N s) |
-                                          |               |
-                                          +-------+-------+
-                                                  |
-                                        umbral superado
-                                                  |
-                              +-----------+-------v-------+-----------+
-                              |           |               |           |
-                      +-------v----+ +----v------+ +------v------+   |
-                      |            | |           | |             |   |
-                      | bloquear   | |  alertar  | | registrar   |   |
-                      |  iptables  | |  consola  | |  .log       |   |
-                      |            | |           | |             |   |
-                      +------------+ +-----------+ +-------------+   |
+  logs/*.log
+      |
+      v
+  [1] Ingesta          ->  lectura en tiempo real (poll cada 1s)
+      |
+      v
+  [2] Motor de Reglas  ->  regex compiladas desde ficheros YAML
+      |  match + IP extraida
+      v
+  [3] Correlacion      ->  ventana deslizante por (regla, IP) · thread-safe
+      |  umbral superado
+      v
+  [4] Respuesta        ->  bloquear_ip (iptables) | alertar | registrar
+      |
+      v
+  [5] Alertas          ->  consola en color + logs/alertas.log
 ```
 
 ---
 
 ## Modulos
 
-| Modulo | Fichero | Funcion |
+| Modulo | Fichero | Descripcion |
 |---|---|---|
 | ![](https://img.shields.io/badge/Ingesta-1a3a5e?style=flat-square&labelColor=1a1a2e) | `modules/ingesta.py` | Lee logs en tiempo real con polling por segundo |
 | ![](https://img.shields.io/badge/Motor_Reglas-3a1a5e?style=flat-square&labelColor=1a1a2e) | `modules/motor_reglas.py` | Compila regex de los YAML y genera eventos en cada match |
 | ![](https://img.shields.io/badge/Correlacion-1a4a3e?style=flat-square&labelColor=1a1a2e) | `modules/correlacion.py` | Ventana deslizante por (regla, IP) con hilo de limpieza |
-| ![](https://img.shields.io/badge/Respuesta-5e2a1a?style=flat-square&labelColor=1a1a2e) | `modules/respuesta.py` | Ejecuta la accion: iptables (real) o simulacion |
+| ![](https://img.shields.io/badge/Respuesta-5e2a1a?style=flat-square&labelColor=1a1a2e) | `modules/respuesta.py` | Ejecuta la accion: iptables (modo real) o simulacion |
 | ![](https://img.shields.io/badge/Alertas-3a3a1a?style=flat-square&labelColor=1a1a2e) | `modules/alertas.py` | Emite alertas a consola y guarda en `logs/alertas.log` |
 
 ---
@@ -82,11 +66,11 @@
 
 | ID | Nombre | Umbral | Ventana | Accion | Severidad |
 |---|---|---|---|---|---|
-| `SSH_BRUTEFORCE` | Fuerza bruta SSH | 5 intentos | 60 s | bloquear_ip | ![](https://img.shields.io/badge/ALTA-8b2e35?style=flat-square) |
-| `SSH_INVALID_USER` | Usuario invalido SSH | 3 intentos | 60 s | bloquear_ip | ![](https://img.shields.io/badge/MEDIA-8b6a2e?style=flat-square) |
-| `SSH_ROOT_LOGIN` | Login como root | 2 intentos | 60 s | bloquear_ip | ![](https://img.shields.io/badge/ALTA-8b2e35?style=flat-square) |
-| `WEB_SCAN` | Escaneo web (404s) | 10 peticiones | 30 s | alertar | ![](https://img.shields.io/badge/MEDIA-8b6a2e?style=flat-square) |
-| `WEB_AUTH_FAIL` | Fallo auth web | 5 fallos | 60 s | bloquear_ip | ![](https://img.shields.io/badge/MEDIA-8b6a2e?style=flat-square) |
+| `SSH_BRUTEFORCE` | Fuerza bruta SSH | 5 intentos | 60 s | `bloquear_ip` | ![](https://img.shields.io/badge/ALTA-8b2e35?style=flat-square) |
+| `SSH_INVALID_USER` | Usuario invalido SSH | 3 intentos | 60 s | `bloquear_ip` | ![](https://img.shields.io/badge/MEDIA-8b6a2e?style=flat-square) |
+| `SSH_ROOT_LOGIN` | Login como root | 2 intentos | 60 s | `bloquear_ip` | ![](https://img.shields.io/badge/ALTA-8b2e35?style=flat-square) |
+| `WEB_SCAN` | Escaneo web (404s) | 10 peticiones | 30 s | `alertar` | ![](https://img.shields.io/badge/MEDIA-8b6a2e?style=flat-square) |
+| `WEB_AUTH_FAIL` | Fallo auth web | 5 fallos | 60 s | `bloquear_ip` | ![](https://img.shields.io/badge/MEDIA-8b6a2e?style=flat-square) |
 
 ---
 
@@ -135,10 +119,10 @@ python main.py --config config/config.yaml
 ![](https://img.shields.io/badge/03-Simular_un_ataque-5e2a1a?style=flat-square&labelColor=1a1a2e)
 
 ```bash
-# Demo completa (varios tipos de ataque)
+# Demo completa
 python tests/simular_ataque.py --demo
 
-# Solo fuerza bruta SSH desde una IP
+# Fuerza bruta SSH desde una IP concreta
 python tests/simular_ataque.py --tipo ssh_bruteforce --ip 192.168.1.100
 
 # Escaneo web
@@ -164,7 +148,7 @@ docker-compose up --build
 | Modo | Comportamiento | Requiere |
 |---|---|---|
 | ![](https://img.shields.io/badge/simulacion-2a9d8f?style=flat-square) | Registra las acciones sin ejecutarlas. Seguro para demos y laboratorio. | — |
-| ![](https://img.shields.io/badge/real-8b2e35?style=flat-square) | Ejecuta `iptables` / `nftables` para bloqueos reales. | root |
+| ![](https://img.shields.io/badge/real-8b2e35?style=flat-square) | Ejecuta `iptables` para bloqueos reales. | root |
 
 ```yaml
 # config/config.yaml
@@ -181,16 +165,16 @@ respuesta:
 ## Formato de alerta
 
 ```
-[2026-02-25 10:15:32] BLOQUEO | Regla: SSH_BRUTEFORCE | IP: 192.168.1.100 | Severidad: ALTA | Duracion: 300s
+[2026-02-25 10:15:32] BLOQUEO | Regla: SSH_BRUTEFORCE | IP: 192.168.1.100 | Severidad: ALTA  | Duracion: 300s
 [2026-02-25 10:16:01] ALERTA  | Regla: WEB_SCAN       | IP: 10.0.0.55     | Severidad: MEDIA
-[2026-02-25 10:18:44] BLOQUEO | Regla: SSH_ROOT_LOGIN | IP: 45.33.32.156  | Severidad: ALTA | Duracion: 300s
+[2026-02-25 10:18:44] BLOQUEO | Regla: SSH_ROOT_LOGIN | IP: 45.33.32.156  | Severidad: ALTA  | Duracion: 300s
 ```
 
 ---
 
 ## Anadir una nueva regla
 
-No es necesario tocar el codigo. Solo crear un fichero `.yaml` en `rules/`:
+No es necesario tocar el codigo. Solo crear un `.yaml` en `rules/`:
 
 ```yaml
 rules:
@@ -205,7 +189,7 @@ rules:
     accion: "bloquear_ip"
 ```
 
-El sistema carga todos los `.yaml` de `rules/` al arrancar automaticamente.
+El sistema carga todos los `.yaml` de `rules/` automaticamente al arrancar.
 
 ---
 
