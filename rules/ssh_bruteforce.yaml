@@ -1,0 +1,37 @@
+# ============================================================
+#  Regla: Fuerza Bruta SSH
+# ============================================================
+
+rules:
+  - id: "SSH_BRUTEFORCE"
+    nombre: "Fuerza bruta SSH"
+    descripcion: "Detecta múltiples fallos de autenticación SSH desde la misma IP"
+    fuente: "auth_log"
+    severidad: "ALTA"           # BAJA | MEDIA | ALTA | CRITICA
+    patron: 'Failed password for .* from (?P<ip>\d+\.\d+\.\d+\.\d+) port'
+    grupo_ip: "ip"              # nombre del grupo regex que contiene la IP
+    umbral: 5                   # número de eventos en la ventana para disparar
+    ventana_segundos: 60
+    accion: "bloquear_ip"       # bloquear_ip | alertar | registrar
+
+  - id: "SSH_INVALID_USER"
+    nombre: "Usuario inválido SSH"
+    descripcion: "Detecta intentos de login con usuarios inexistentes"
+    fuente: "auth_log"
+    severidad: "MEDIA"
+    patron: 'Invalid user \S+ from (?P<ip>\d+\.\d+\.\d+\.\d+)'
+    grupo_ip: "ip"
+    umbral: 3
+    ventana_segundos: 60
+    accion: "bloquear_ip"
+
+  - id: "SSH_ROOT_LOGIN"
+    nombre: "Intento login root SSH"
+    descripcion: "Detecta intentos de acceso como root"
+    fuente: "auth_log"
+    severidad: "ALTA"
+    patron: 'Failed password for root from (?P<ip>\d+\.\d+\.\d+\.\d+)'
+    grupo_ip: "ip"
+    umbral: 2
+    ventana_segundos: 60
+    accion: "bloquear_ip"

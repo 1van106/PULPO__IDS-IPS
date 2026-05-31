@@ -1,0 +1,13 @@
+version: "3.8"
+
+services:
+  logclassifier:
+    build: .
+    container_name: logclassifier
+    volumes:
+      - ./logs:/app/logs          # los logs de auth.log y syslog.log se montan aquí
+      - ./config:/app/config
+      - ./rules:/app/rules
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped

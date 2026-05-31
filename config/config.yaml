@@ -1,0 +1,40 @@
+# ============================================================
+#  LogClassifier - Configuración Principal
+# ============================================================
+
+general:
+  log_level: INFO                  # DEBUG | INFO | WARNING | ERROR
+  poll_interval: 1                 # segundos entre lecturas de log
+  timezone: "Europe/Madrid"
+
+ingesta:
+  sources:
+    - name: "auth_log"
+      path: "logs/auth.log"
+      type: "file"
+      enabled: true
+    - name: "syslog"
+      path: "logs/syslog.log"
+      type: "file"
+      enabled: true
+
+motor_reglas:
+  rules_dir: "rules/"              # directorio con ficheros .yaml de reglas
+
+correlacion:
+  window_seconds: 60               # ventana temporal para contar eventos
+  cleanup_interval: 120            # cada cuántos segundos limpiar eventos viejos
+
+respuesta:
+  enabled: true
+  modo: "simulacion"               # "simulacion" | "real"
+  # En modo real se ejecutan iptables/nftables
+  # En modo simulacion solo se registra la acción
+  bloqueo_duracion_segundos: 300   # tiempo que permanece bloqueada una IP
+  whitelist_ips:
+    - "127.0.0.1"
+    - "192.168.1.1"
+
+alertas:
+  log_file: "logs/alertas.log"
+  consola: true

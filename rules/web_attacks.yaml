@@ -1,0 +1,26 @@
+# ============================================================
+#  Regla: Ataques Web
+# ============================================================
+
+rules:
+  - id: "WEB_SCAN"
+    nombre: "Escaneo web automatizado"
+    descripcion: "Detecta múltiples peticiones 404 desde la misma IP (posible scanner)"
+    fuente: "syslog"
+    severidad: "MEDIA"
+    patron: '(?P<ip>\d+\.\d+\.\d+\.\d+).* 404 '
+    grupo_ip: "ip"
+    umbral: 10
+    ventana_segundos: 30
+    accion: "alertar"
+
+  - id: "WEB_AUTH_FAIL"
+    nombre: "Fallo autenticación web"
+    descripcion: "Detecta fallos repetidos de autenticación en aplicación web"
+    fuente: "syslog"
+    severidad: "MEDIA"
+    patron: 'authentication failure.*rhost=(?P<ip>\d+\.\d+\.\d+\.\d+)'
+    grupo_ip: "ip"
+    umbral: 5
+    ventana_segundos: 60
+    accion: "bloquear_ip"
