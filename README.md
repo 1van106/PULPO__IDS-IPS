@@ -1,132 +1,228 @@
-# LogClassifier 🛡️
-### Plataforma de Clasificación de Logs
+<div align="center">
 
-> Proyecto final de la asignatura **Normativa de Ciberseguridad**  
-> Autores: Jesús Martínez Montalvo · Iván Batista Herrero · Fernando Manuel Ávila Medina  
+```
++---------------------------------------------------------------+
+|                                                               |
+|   L O G C L A S S I F I E R                                  |
+|   Sistema IDS basado en reglas                                |
+|   Normativa de Ciberseguridad  ·  Master EUSA  ·  Feb 2026   |
+|                                                               |
++---------------------------------------------------------------+
+```
+
+![Python](https://img.shields.io/badge/Python_3.9+-3776AB?style=for-the-badge&logo=python&logoColor=white&labelColor=1a1a2e)
+![PyYAML](https://img.shields.io/badge/PyYAML-cc8800?style=for-the-badge&labelColor=1a1a2e)
+![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white&labelColor=1a1a2e)
+![pytest](https://img.shields.io/badge/pytest-0A9EDC?style=for-the-badge&logo=pytest&logoColor=white&labelColor=1a1a2e)
+![Estado](https://img.shields.io/badge/Estado-ENTREGADO-2a9d8f?style=for-the-badge&labelColor=1a1a2e)
+
+</div>
+
+---
+
+## Descripcion
+
+**LogClassifier** es un sistema de deteccion de intrusiones (**IDS**) basado en reglas, inspirado en Fail2Ban. Analiza ficheros de log en tiempo real, clasifica eventos mediante expresiones regulares definidas en YAML y ejecuta respuestas automaticas cuando se supera el umbral configurado: desde bloqueos via **iptables** hasta registros en fichero.
+
+> Proyecto final de la asignatura **Normativa de Ciberseguridad**
+> Autores: Jesús Martínez Montalvo · Iván Batista Herrero · Fernando Manuel Ávila Medina
 > Profesor: Carlos Basulto — Febrero 2026
 
 ---
 
-## Descripción
-
-Sistema inspirado en Fail2Ban que analiza logs en tiempo real, detecta patrones de ataque mediante expresiones regulares y ejecuta acciones automáticas (bloqueo de IPs, alertas).
-
-## Arquitectura
+## Pipeline de deteccion
 
 ```
-logs/*.log  →  [Módulo Ingesta]  →  [Motor Reglas]  →  [Correlación Temporal]
-                                                               ↓
-                                                    [Módulo Respuesta]
-                                                    bloquear_ip / alertar
-                                                               ↓
-                                                    [Módulo Alertas]
-                                                    consola + alertas.log
++-------------+     +---------------+     +---------------+
+|             |     |               |     |               |
+|   logs/     +---->+   Ingesta     +---->+  Motor Reglas |
+|  *.log      |     |  (tail RT)    |     |  (regex/YAML) |
+|             |     |               |     |               |
++-------------+     +---------------+     +-------+-------+
+                                                  |
+                                          match + IP extraida
+                                                  |
+                                          +-------v-------+
+                                          |               |
+                                          |  Correlacion  |
+                                          | (ventana N s) |
+                                          |               |
+                                          +-------+-------+
+                                                  |
+                                        umbral superado
+                                                  |
+                              +-----------+-------v-------+-----------+
+                              |           |               |           |
+                      +-------v----+ +----v------+ +------v------+   |
+                      |            | |           | |             |   |
+                      | bloquear   | |  alertar  | | registrar   |   |
+                      |  iptables  | |  consola  | |  .log       |   |
+                      |            | |           | |             |   |
+                      +------------+ +-----------+ +-------------+   |
 ```
+
+---
+
+## Modulos
+
+| Modulo | Fichero | Funcion |
+|---|---|---|
+| ![](https://img.shields.io/badge/Ingesta-1a3a5e?style=flat-square&labelColor=1a1a2e) | `modules/ingesta.py` | Lee logs en tiempo real con polling por segundo |
+| ![](https://img.shields.io/badge/Motor_Reglas-3a1a5e?style=flat-square&labelColor=1a1a2e) | `modules/motor_reglas.py` | Compila regex de los YAML y genera eventos en cada match |
+| ![](https://img.shields.io/badge/Correlacion-1a4a3e?style=flat-square&labelColor=1a1a2e) | `modules/correlacion.py` | Ventana deslizante por (regla, IP) con hilo de limpieza |
+| ![](https://img.shields.io/badge/Respuesta-5e2a1a?style=flat-square&labelColor=1a1a2e) | `modules/respuesta.py` | Ejecuta la accion: iptables (real) o simulacion |
+| ![](https://img.shields.io/badge/Alertas-3a3a1a?style=flat-square&labelColor=1a1a2e) | `modules/alertas.py` | Emite alertas a consola y guarda en `logs/alertas.log` |
+
+---
+
+## Reglas incluidas
+
+![](https://img.shields.io/badge/SSH-ssh__bruteforce.yaml-8b2e35?style=flat-square&labelColor=1a1a2e)
+![](https://img.shields.io/badge/WEB-web__attacks.yaml-2e5a8b?style=flat-square&labelColor=1a1a2e)
+
+| ID | Nombre | Umbral | Ventana | Accion | Severidad |
+|---|---|---|---|---|---|
+| `SSH_BRUTEFORCE` | Fuerza bruta SSH | 5 intentos | 60 s | bloquear_ip | ![](https://img.shields.io/badge/ALTA-8b2e35?style=flat-square) |
+| `SSH_INVALID_USER` | Usuario invalido SSH | 3 intentos | 60 s | bloquear_ip | ![](https://img.shields.io/badge/MEDIA-8b6a2e?style=flat-square) |
+| `SSH_ROOT_LOGIN` | Login como root | 2 intentos | 60 s | bloquear_ip | ![](https://img.shields.io/badge/ALTA-8b2e35?style=flat-square) |
+| `WEB_SCAN` | Escaneo web (404s) | 10 peticiones | 30 s | alertar | ![](https://img.shields.io/badge/MEDIA-8b6a2e?style=flat-square) |
+| `WEB_AUTH_FAIL` | Fallo auth web | 5 fallos | 60 s | bloquear_ip | ![](https://img.shields.io/badge/MEDIA-8b6a2e?style=flat-square) |
+
+---
 
 ## Estructura del proyecto
 
 ```
-logclassifier/
-├── main.py                    # Punto de entrada principal
-├── config/
-│   └── config.yaml            # Configuración general
-├── rules/
-│   ├── ssh_bruteforce.yaml    # Reglas SSH
-│   └── web_attacks.yaml       # Reglas web
-├── modules/
-│   ├── ingesta.py             # Lectura de logs en tiempo real
-│   ├── motor_reglas.py        # Motor de expresiones regulares
-│   ├── correlacion.py         # Ventanas temporales / umbrales
-│   ├── respuesta.py           # Acciones automáticas
-│   └── alertas.py             # Notificaciones y registro
-├── tests/
-│   ├── simular_ataque.py      # Generador de ataques de prueba
-│   └── test_motor_reglas.py   # Tests unitarios
-├── logs/                      # Directorio de logs (creado automáticamente)
-├── requirements.txt
-├── Dockerfile
-└── docker-compose.yml
+LogClassifier/
++-- main.py                    <- orquestador: instancia y conecta los 5 modulos
++-- config/
+|   +-- config.yaml            <- configuracion general del sistema
++-- rules/
+|   +-- ssh_bruteforce.yaml    <- reglas de deteccion SSH
+|   +-- web_attacks.yaml       <- reglas de deteccion web
++-- modules/
+|   +-- ingesta.py             <- lectura de logs en tiempo real
+|   +-- motor_reglas.py        <- motor de expresiones regulares
+|   +-- correlacion.py         <- ventanas temporales y umbrales
+|   +-- respuesta.py           <- acciones automaticas
+|   +-- alertas.py             <- notificaciones y registro
++-- tests/
+|   +-- simular_ataque.py      <- generador de ataques para pruebas
+|   +-- test_motor_reglas.py   <- tests unitarios del motor
++-- Dockerfile
++-- docker-compose.yml
++-- requirements.txt
 ```
 
-## Instalación y uso
+---
 
-### 1. Requisitos
-- Python 3.9+
-- PyYAML
+## Instalacion y uso
+
+![](https://img.shields.io/badge/01-Instalar_dependencias-1a3a5e?style=flat-square&labelColor=1a1a2e)
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### 2. Arrancar el sistema
+![](https://img.shields.io/badge/02-Arrancar_el_sistema-1a4a3e?style=flat-square&labelColor=1a1a2e)
 
 ```bash
 python main.py
-# o con config personalizada:
+# con config personalizada:
 python main.py --config config/config.yaml
 ```
 
-### 3. Simular un ataque (en otra terminal)
+![](https://img.shields.io/badge/03-Simular_un_ataque-5e2a1a?style=flat-square&labelColor=1a1a2e)
 
 ```bash
 # Demo completa (varios tipos de ataque)
 python tests/simular_ataque.py --demo
 
-# Solo fuerza bruta SSH
+# Solo fuerza bruta SSH desde una IP
 python tests/simular_ataque.py --tipo ssh_bruteforce --ip 192.168.1.100
 
 # Escaneo web
 python tests/simular_ataque.py --tipo web_scan --ip 10.0.0.55
 ```
 
-### 4. Ejecutar tests unitarios
+![](https://img.shields.io/badge/04-Tests_unitarios-3a3a1a?style=flat-square&labelColor=1a1a2e)
 
 ```bash
 python -m pytest tests/test_motor_reglas.py -v
-# o sin pytest:
-python tests/test_motor_reglas.py
 ```
 
-### 5. Con Docker
+![](https://img.shields.io/badge/05-Con_Docker-2496ED?style=flat-square&labelColor=1a1a2e&logo=docker&logoColor=white)
 
 ```bash
 docker-compose up --build
 ```
 
-## Configuración de reglas
+---
 
-Las reglas se definen en ficheros YAML dentro de `rules/`. Ejemplo:
+## Modos de operacion
+
+| Modo | Comportamiento | Requiere |
+|---|---|---|
+| ![](https://img.shields.io/badge/simulacion-2a9d8f?style=flat-square) | Registra las acciones sin ejecutarlas. Seguro para demos y laboratorio. | — |
+| ![](https://img.shields.io/badge/real-8b2e35?style=flat-square) | Ejecuta `iptables` / `nftables` para bloqueos reales. | root |
+
+```yaml
+# config/config.yaml
+respuesta:
+  modo: "simulacion"   # cambiar a "real" en produccion
+  bloqueo_duracion_segundos: 300
+  whitelist_ips:
+    - "127.0.0.1"
+    - "192.168.1.1"
+```
+
+---
+
+## Formato de alerta
+
+```
+[2026-02-25 10:15:32] BLOQUEO | Regla: SSH_BRUTEFORCE | IP: 192.168.1.100 | Severidad: ALTA | Duracion: 300s
+[2026-02-25 10:16:01] ALERTA  | Regla: WEB_SCAN       | IP: 10.0.0.55     | Severidad: MEDIA
+[2026-02-25 10:18:44] BLOQUEO | Regla: SSH_ROOT_LOGIN | IP: 45.33.32.156  | Severidad: ALTA | Duracion: 300s
+```
+
+---
+
+## Anadir una nueva regla
+
+No es necesario tocar el codigo. Solo crear un fichero `.yaml` en `rules/`:
 
 ```yaml
 rules:
   - id: "MI_REGLA"
-    nombre: "Mi regla personalizada"
-    fuente: "auth_log"          # fuente de log donde aplicar
-    severidad: "ALTA"           # BAJA | MEDIA | ALTA | CRITICA
-    patron: 'Failed.*from (?P<ip>\d+\.\d+\.\d+\.\d+)'
-    grupo_ip: "ip"              # nombre del grupo regex con la IP
-    umbral: 5                   # eventos necesarios para disparar
-    ventana_segundos: 60        # ventana temporal
-    accion: "bloquear_ip"       # bloquear_ip | alertar | registrar
+    nombre: "Descripcion de la regla"
+    fuente: "auth_log"
+    severidad: "ALTA"
+    patron: 'Failed.*from (?P<ip>\d+\.\d+\.\d+\.\d+) port'
+    grupo_ip: "ip"
+    umbral: 5
+    ventana_segundos: 60
+    accion: "bloquear_ip"
 ```
 
-## Modos de operación
+El sistema carga todos los `.yaml` de `rules/` al arrancar automaticamente.
 
-| Modo         | Descripción                                           |
-|--------------|-------------------------------------------------------|
-| `simulacion` | Solo registra las acciones. Seguro para demos y lab.  |
-| `real`       | Ejecuta `iptables` para bloqueos reales (requiere root)|
+---
 
-Configurar en `config/config.yaml`:
-```yaml
-respuesta:
-  modo: "simulacion"   # cambiar a "real" en producción
-```
+## Funcionalidades
 
-## Alertas
+![](https://img.shields.io/badge/Deteccion-Regex_compiladas_sobre_cada_linea-3a1a5e?style=flat-square&labelColor=1a1a2e)
+![](https://img.shields.io/badge/Deteccion-Multiples_fuentes_de_log-3a1a5e?style=flat-square&labelColor=1a1a2e)
+![](https://img.shields.io/badge/Deteccion-Extraccion_de_IP_por_grupo_regex-3a1a5e?style=flat-square&labelColor=1a1a2e)
 
-Las alertas se muestran en consola con colores y se guardan en `logs/alertas.log`.
+![](https://img.shields.io/badge/Correlacion-Ventana_deslizante_por_(regla,IP)-1a4a3e?style=flat-square&labelColor=1a1a2e)
+![](https://img.shields.io/badge/Correlacion-Thread--safe_con_lock-1a4a3e?style=flat-square&labelColor=1a1a2e)
+![](https://img.shields.io/badge/Correlacion-Limpieza_periodica_de_contadores-1a4a3e?style=flat-square&labelColor=1a1a2e)
 
-```
-[2026-02-25 10:15:32] BLOQUEO | Regla: SSH_BRUTEFORCE | IP: 192.168.1.100 | Severidad: ALTA | Duración: 300s
-```
+![](https://img.shields.io/badge/Respuesta-Bloqueo_via_iptables-5e2a1a?style=flat-square&labelColor=1a1a2e)
+![](https://img.shields.io/badge/Respuesta-Whitelist_de_IPs-5e2a1a?style=flat-square&labelColor=1a1a2e)
+![](https://img.shields.io/badge/Respuesta-Modo_simulacion_seguro-5e2a1a?style=flat-square&labelColor=1a1a2e)
+
+![](https://img.shields.io/badge/Config-Reglas_en_YAML_sin_tocar_codigo-3a3a1a?style=flat-square&labelColor=1a1a2e)
+![](https://img.shields.io/badge/Config-Severidad_BAJA_MEDIA_ALTA_CRITICA-3a3a1a?style=flat-square&labelColor=1a1a2e)
+![](https://img.shields.io/badge/Config-Soporte_Docker-3a3a1a?style=flat-square&labelColor=1a1a2e)
