@@ -1,0 +1,26 @@
+appId: dev.ivanbatista.logclassifier-dashboard
+productName: LogClassifier Dashboard
+copyright: Copyright © 2026 Iván Batista Herrero
+directories:
+  buildResources: build
+  output: dist
+files:
+  - out/**/*
+linux:
+  target:
+    - target: AppImage
+      arch: [x64]
+    - target: deb
+      arch: [x64]
+  category: Utility
+  maintainer: Iván Batista Herrero
+win:
+  target:
+    - target: nsis
+      arch: [x64]
+  executableName: LogClassifier Dashboard
+nsis:
+  artifactName: ${productName}-${version}-setup.${ext}
+  shortcutName: ${productName}
+  uninstallDisplayName: ${productName}
+  createDesktopShortcut: always
