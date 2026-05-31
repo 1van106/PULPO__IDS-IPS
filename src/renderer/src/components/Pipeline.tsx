@@ -1,19 +1,19 @@
 import { Alert } from '../types'
+import { ArrowIcon } from './Icons'
 
 const STAGES = [
-  { id: 'ingesta',     label: 'Ingesta',       desc: 'Lectura logs en RT' },
-  { id: 'motor',       label: 'Motor Reglas',  desc: 'Regex + YAML' },
-  { id: 'correlacion', label: 'Correlación',   desc: 'Ventana temporal' },
-  { id: 'respuesta',   label: 'Respuesta',     desc: 'Bloquear / Alertar' },
-  { id: 'alertas',     label: 'Alertas',       desc: 'Registro + consola' },
+  { id: 'ingesta',     num: '01', label: 'Ingesta',       desc: 'Lectura y parseo del log en streaming' },
+  { id: 'motor',       num: '02', label: 'Motor Reglas',  desc: 'Match contra firmas activas' },
+  { id: 'correlacion', num: '03', label: 'Correlación',   desc: 'Agrupación por IP, sesión y ventana' },
+  { id: 'respuesta',   num: '04', label: 'Respuesta',     desc: 'Bloqueo automático y mitigación' },
+  { id: 'alertas',     num: '05', label: 'Alertas',       desc: 'Notificación y registro de incidentes' },
 ] as const
 
 type StageId = typeof STAGES[number]['id']
 
 function getActiveStage(alert: Alert | undefined): StageId {
   if (!alert) return 'ingesta'
-  if (alert.tipo === 'BLOQUEO') return 'respuesta'
-  return 'alertas'
+  return alert.tipo === 'BLOQUEO' ? 'respuesta' : 'alertas'
 }
 
 interface PipelineProps {
@@ -24,18 +24,23 @@ export default function Pipeline({ lastAlert }: PipelineProps) {
   const active = getActiveStage(lastAlert)
 
   return (
-    <section className="pipeline">
-      <h2 className="section-title">Pipeline de Detección</h2>
+    <section>
+      <div className="sec-head">
+        <h2>Pipeline de detección</h2>
+        <div className="line" />
+      </div>
       <div className="pipeline-stages">
         {STAGES.map((stage, i) => (
           <div key={stage.id} className="pipeline-item">
-            <div className={`pipeline-stage ${active === stage.id ? 'pipeline-stage--active' : ''}`}>
-              <span className="stage-num">{String(i + 1).padStart(2, '0')}</span>
-              <span className="stage-label">{stage.label}</span>
-              <span className="stage-desc">{stage.desc}</span>
+            <div className={`pipeline-stage${active === stage.id ? ' pipeline-stage--active' : ''}`}>
+              <div className="stage-top">
+                <span className="stage-num">{stage.num}</span>
+                <span className="stage-label">{stage.label}</span>
+              </div>
+              <div className="stage-desc">{stage.desc}</div>
             </div>
             {i < STAGES.length - 1 && (
-              <span className="pipeline-arrow">›</span>
+              <div className="pipeline-arrow"><ArrowIcon /></div>
             )}
           </div>
         ))}

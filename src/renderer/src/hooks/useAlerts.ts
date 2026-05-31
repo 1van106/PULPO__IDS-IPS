@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Alert, AppStats, parseAlert } from '../types'
+import { Alert, AppStats, BlockedIP, parseAlert } from '../types'
 
 const MAX_ALERTS = 500
 
@@ -34,9 +34,21 @@ export function useAlerts() {
     setIsMonitoring(true)
   }, [])
 
-  const blockedIPs: string[] = [
-    ...new Set(alerts.filter(a => a.tipo === 'BLOQUEO').map(a => a.ip))
-  ]
+  // Derive blocked IPs with hit counts from alert list
+  const blockedIPs: BlockedIP[] = Array.from(
+    alerts
+      .filter(a => a.tipo === 'BLOQUEO')
+      .reduce((map, alert) => {
+        const existing = map.get(alert.ip)
+        if (existing) {
+          existing.hits++
+        } else {
+          map.set(alert.ip, { ip: alert.ip, rule: alert.regla, hits: 1 })
+        }
+        return map
+      }, new Map<string, BlockedIP>())
+      .values()
+  )
 
   const stats: AppStats = {
     total:    alerts.length,

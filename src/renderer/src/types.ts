@@ -12,6 +12,12 @@ export interface Alert {
   raw: string
 }
 
+export interface BlockedIP {
+  ip: string
+  rule: string
+  hits: number
+}
+
 export interface AppStats {
   total: number
   bloqueos: number
