@@ -19,11 +19,13 @@ export function useAlerts() {
   }, [])
 
   useEffect(() => {
-    const cleanup = window.api.onAutoDetect((path: string) => {
-      setLogPath(path)
-      setIsMonitoring(true)
+    window.api.getAutoPath().then((path) => {
+      if (path) {
+        window.api.watchLog(path)
+        setLogPath(path)
+        setIsMonitoring(true)
+      }
     })
-    return cleanup
   }, [])
 
   const openFile = useCallback(async () => {

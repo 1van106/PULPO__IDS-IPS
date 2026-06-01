@@ -14,11 +14,8 @@ const api = {
     return () => ipcRenderer.removeListener('alert:new', handler)
   },
 
-  onAutoDetect: (cb: (path: string) => void): (() => void) => {
-    const handler = (_: Electron.IpcRendererEvent, path: string): void => cb(path)
-    ipcRenderer.once('log:autodetected', handler)
-    return () => ipcRenderer.removeListener('log:autodetected', handler)
-  }
+  getAutoPath: (): Promise<string | null> =>
+    ipcRenderer.invoke('log:getAutoPath')
 }
 
 if (process.contextIsolated) {

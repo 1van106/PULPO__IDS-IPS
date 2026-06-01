@@ -22,16 +22,7 @@ function createWindow(): void {
     }
   })
 
-  mainWindow.on('ready-to-show', () => {
-    mainWindow!.show()
-    const autoPath = findDefaultLog()
-    if (autoPath) {
-      mainWindow!.webContents.once('did-finish-load', () => {
-        watchLogFile(autoPath)
-        mainWindow!.webContents.send('log:autodetected', autoPath)
-      })
-    }
-  })
+  mainWindow.on('ready-to-show', () => mainWindow!.show())
 
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
     shell.openExternal(url)
@@ -115,6 +106,8 @@ app.whenReady().then(() => {
     watchLogFile(filePath)
     return filePath
   })
+
+  ipcMain.handle('log:getAutoPath', () => findDefaultLog())
 
   createWindow()
   app.on('activate', () => {
