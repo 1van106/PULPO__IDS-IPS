@@ -1,6 +1,6 @@
 import { app, shell, BrowserWindow, ipcMain, dialog } from 'electron'
 import { join } from 'path'
-import { electronApp, optimizer, is } from '@electron-toolkit/utils'
+import { electronApp, is } from '@electron-toolkit/utils'
 import * as fs from 'fs'
 
 let mainWindow: BrowserWindow | null = null
@@ -76,8 +76,6 @@ function watchLogFile(filePath: string): void {
 
 app.whenReady().then(() => {
   electronApp.setAppUserModelId('dev.ivanbatista.logclassifier-dashboard')
-  app.on('browser-window-created', (_, window) => optimizer.watchShortcuts(window))
-
   ipcMain.handle('dialog:openLog', async () => {
     const { canceled, filePaths } = await dialog.showOpenDialog(mainWindow!, {
       title: 'Seleccionar alertas.log',
