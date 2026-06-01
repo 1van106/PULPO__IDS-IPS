@@ -36,7 +36,7 @@ export function parseAlert(raw: string): Alert | null {
   const line = raw.trim()
   if (!line) return null
   const m = line.match(
-    /\[(.+?)\]\s+(\w+)\s+\|\s+Regla:\s+(\S+)\s+\|\s+IP:\s+(\S+)\s+\|\s+Severidad:\s+(\w+)(?:\s+\|\s+Duracion:\s+(\d+)s)?/
+    /\[(.+?)\]\s+(\w+)\s+\|\s+Regla:\s+(\S+)\s+\|\s+IP:\s+(\S+)\s+\|\s+Severidad:\s+(\w+)(?:\s+\|\s+Duraci[oó]n:\s+(\d+)s)?/i
   )
   if (!m) return null
   return {

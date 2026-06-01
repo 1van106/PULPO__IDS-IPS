@@ -58,7 +58,8 @@ function watchLogFile(filePath: string): void {
   fileWatcher = fs.watch(filePath, () => {
     try {
       const stat = fs.statSync(filePath)
-      if (stat.size <= lastSize) return
+      if (stat.size < lastSize) { lastSize = 0 }
+      if (stat.size === lastSize) return
       const stream = fs.createReadStream(filePath, { start: lastSize, end: stat.size - 1 })
       let data = ''
       stream.on('data', chunk => (data += chunk))
