@@ -18,6 +18,14 @@ export function useAlerts() {
     return cleanup
   }, [])
 
+  useEffect(() => {
+    const cleanup = window.api.onAutoDetect((path: string) => {
+      setLogPath(path)
+      setIsMonitoring(true)
+    })
+    return cleanup
+  }, [])
+
   const openFile = useCallback(async () => {
     const path = await window.api.openLogDialog()
     if (path) {

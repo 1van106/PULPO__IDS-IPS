@@ -12,6 +12,12 @@ const api = {
     const handler = (_: Electron.IpcRendererEvent, line: string): void => cb(line)
     ipcRenderer.on('alert:new', handler)
     return () => ipcRenderer.removeListener('alert:new', handler)
+  },
+
+  onAutoDetect: (cb: (path: string) => void): (() => void) => {
+    const handler = (_: Electron.IpcRendererEvent, path: string): void => cb(path)
+    ipcRenderer.once('log:autodetected', handler)
+    return () => ipcRenderer.removeListener('log:autodetected', handler)
   }
 }
 

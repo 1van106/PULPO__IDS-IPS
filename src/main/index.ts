@@ -22,7 +22,16 @@ function createWindow(): void {
     }
   })
 
-  mainWindow.on('ready-to-show', () => mainWindow!.show())
+  mainWindow.on('ready-to-show', () => {
+    mainWindow!.show()
+    const autoPath = findDefaultLog()
+    if (autoPath) {
+      mainWindow!.webContents.once('did-finish-load', () => {
+        watchLogFile(autoPath)
+        mainWindow!.webContents.send('log:autodetected', autoPath)
+      })
+    }
+  })
 
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
     shell.openExternal(url)
@@ -72,6 +81,19 @@ function watchLogFile(filePath: string): void {
       console.error('[watcher]', e)
     }
   })
+}
+
+const DEFAULT_LOG_PATHS = [
+  '/opt/LogClassifier/alertas.log',
+  '/var/log/ids/alertas.log',
+  '/tmp/alertas.log'
+]
+
+function findDefaultLog(): string | null {
+  for (const p of DEFAULT_LOG_PATHS) {
+    if (fs.existsSync(p)) return p
+  }
+  return null
 }
 
 app.whenReady().then(() => {

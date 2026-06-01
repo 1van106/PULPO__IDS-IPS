@@ -7,6 +7,7 @@ declare global {
       openLogDialog: () => Promise<string | null>
       watchLog: (path: string) => Promise<string>
       onAlert: (cb: (line: string) => void) => () => void
+      onAutoDetect: (cb: (path: string) => void) => () => void
     }
   }
 }
