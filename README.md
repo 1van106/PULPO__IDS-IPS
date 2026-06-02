@@ -2,7 +2,17 @@
   <img src="build/icon.svg" width="160" alt="PULPO icon" />
 </p>
 
-<h1 align="center">PULPO</h1>
+<div align="center">
+<pre>
+██████╗ ██╗   ██╗██╗     ██████╗  ██████╗ 
+██╔══██╗██║   ██║██║     ██╔══██╗██╔═══██╗
+██████╔╝██║   ██║██║     ██████╔╝██║   ██║
+██╔═══╝ ██║   ██║██║     ██╔═══╝ ██║   ██║
+██║     ╚██████╔╝███████╗██║     ╚██████╔╝
+╚═╝      ╚═════╝ ╚══════╝╚═╝      ╚═════╝ 
+</pre>
+</div>
+
 <p align="center"><b>IDS / IPS Monitor</b></p>
 
 <p align="center">
@@ -16,6 +26,7 @@
 
 ---
 
+> [!NOTE]
 > **PULPO** es una aplicación de escritorio IDS/IPS desarrollada de forma independiente, inspirada conceptualmente en [LogClassifier](https://github.com/1van106/LogClassifier). Incorpora su propio pipeline de detección, procesamiento de logs en streaming, clasificación de alertas por tipo y severidad, persistencia de historial entre sesiones y visualización de la actividad mediante gráficos de análisis — todo dentro de un ejecutable único sin dependencias de servidor.
 
 ---
