@@ -104,7 +104,7 @@ El dashboard espera líneas con este formato (el mismo que genera LogClassifier)
 
 ```bash
 # Clonar el repositorio
-git clone https://github.com/1van106/PULPO-IDS-IPS.git
+git clone https://github.com/1van106/PULPO__IDS-IPS.git
 cd PULPO-IDS-IPS
 
 # Instalar dependencias
