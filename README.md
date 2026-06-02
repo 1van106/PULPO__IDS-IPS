@@ -30,18 +30,19 @@
 
 ## Características
 
-- **Streaming en tiempo real** — lee `alertas.log` con `fs.watch` de forma incremental; solo procesa bytes nuevos
-- **Auto-carga al iniciar** — detecta automáticamente la ruta del log (`/opt/LogClassifier/alertas.log`) sin intervención del usuario
-- **Persistencia de historial** — las alertas se almacenan en disco (`alerts.ndjson`); al reabrir la app el historial se recupera instantáneamente sin necesidad de que el IDS esté corriendo
-- **Panel de análisis** — timeline de actividad de los últimos 30 min, gráfico de distribución por severidad y top de reglas más disparadas
-- **Feed de alertas** — tabla en vivo con tipo, regla, IP, severidad y timestamp; filas nuevas con flash de color
-- **Exportar a CSV** — descarga todas las alertas visibles como fichero `.csv` con un clic
-- **Panel de IPs bloqueadas** — agrupa hits por IP con la regla que los disparó y contador de ocurrencias
-- **Estadísticas** — tarjetas de resumen con total, bloqueos, alertas y desglose por severidad
-- **Vista pipeline** — representación visual del pipeline de 5 etapas del IDS
-- **Limpiar historial** — elimina alertas del dashboard y de la base de datos local
-- **Ejecutable único** — sin dependencias de servidor; todo corre dentro del proceso Electron
-- **Multiplataforma** — AppImage / .deb para Linux, instalador NSIS para Windows
+| | |
+|---|---|
+| **Streaming en tiempo real** | Lee `alertas.log` con `fs.watch` de forma incremental; solo procesa bytes nuevos |
+| **Auto-carga al iniciar** | Detecta la ruta del log automáticamente sin intervención del usuario |
+| **Persistencia de historial** | Las alertas se guardan en disco (`alerts.ndjson`); el historial se recupera entre sesiones sin que el IDS esté corriendo |
+| **Panel de análisis** | Timeline de los últimos 30 min, gráfico de distribución por severidad y top de reglas disparadas |
+| **Feed de alertas** | Tabla en vivo con tipo, regla, IP, severidad y timestamp; filas nuevas con flash de color |
+| **Exportar a CSV** | Descarga todas las alertas visibles como `.csv` con un clic |
+| **Panel de IPs bloqueadas** | Agrupa hits por IP con la regla que los disparó y contador de ocurrencias |
+| **Estadísticas** | Tarjetas de resumen con total, bloqueos, alertas y desglose por severidad |
+| **Vista pipeline** | Representación visual del pipeline de 5 etapas del IDS |
+| **Ejecutable único** | Sin dependencias de servidor; todo corre dentro del proceso Electron |
+| **Multiplataforma** | AppImage / `.deb` para Linux · instalador NSIS para Windows |
 
 ---
 
@@ -89,52 +90,45 @@ Pipeline IDS (Python)            PULPO Dashboard
 
 ## Formato de alertas
 
-El dashboard espera líneas con este formato (el mismo que genera LogClassifier):
+> [!TIP]
+> PULPO procesa líneas con el siguiente formato:
 
 ```
-[2026-02-25 10:15:32] BLOQUEO | Regla: SSH_BRUTEFORCE | IP: 192.168.1.100 | Severidad: ALTA | Duración: 300s
-[2026-02-25 10:16:01] ALERTA  | Regla: XSS_ATTEMPT    | IP: 10.0.0.55     | Severidad: ALTA
-[2026-02-25 10:16:45] REGISTRO| Regla: HTTP_METHOD_ABUSE | IP: 172.16.0.8  | Severidad: MEDIA
+[2026-02-25 10:15:32] BLOQUEO | Regla: SSH_BRUTEFORCE    | IP: 192.168.1.100 | Severidad: ALTA  | Duración: 300s
+[2026-02-25 10:16:01] ALERTA  | Regla: XSS_ATTEMPT       | IP: 10.0.0.55     | Severidad: ALTA
+[2026-02-25 10:16:45] REGISTRO| Regla: HTTP_METHOD_ABUSE | IP: 172.16.0.8    | Severidad: MEDIA
 ```
 
-**Tipos de alerta:** `BLOQUEO` · `ALERTA` · `REGISTRO`  
-**Severidades:** `CRITICA` · `ALTA` · `MEDIA` · `BAJA`
+**Tipos:** `BLOQUEO` · `ALERTA` · `REGISTRO` &nbsp;&nbsp;|&nbsp;&nbsp; **Severidades:** `CRITICA` · `ALTA` · `MEDIA` · `BAJA`
 
 ---
 
 ## Instalación y desarrollo
 
-**Requisitos:** Node.js 18+ · npm 9+
+> [!IMPORTANT]
+> **Requisitos:** Node.js 18+ · npm 9+
 
 ```bash
-# Clonar el repositorio
 git clone https://github.com/1van106/PULPO__IDS-IPS.git
-cd PULPO-IDS-IPS
-
-# Instalar dependencias
+cd PULPO__IDS-IPS
 npm install
-
-# Arrancar en modo desarrollo (abre la ventana Electron directamente)
-npm run dev
+npm run dev        # abre la ventana Electron directamente
 ```
 
----
-
-## Empaquetado
+### Empaquetado
 
 ```bash
-# Linux (.AppImage + .deb) — debe ejecutarse en Linux
-npm run package:linux
-
-# Windows (.exe instalador NSIS)
-npm run package:win
+npm run package:linux   # AppImage + .deb  —  ejecutar en Linux
+npm run package:win     # instalador NSIS para Windows
 ```
 
-Los ejecutables se generan en `dist/`.
+> Los ejecutables se generan en `dist/`
 
 ---
 
-## Estructura del proyecto
+<details>
+<summary><b>Estructura del proyecto</b></summary>
+<br>
 
 ```
 src/
@@ -160,18 +154,20 @@ src/
         └── Icons.tsx      # SVGs inline
 ```
 
+</details>
+
 ---
 
 ## Stack tecnológico
 
 | Herramienta | Versión | Uso |
 |---|---|---|
-| <img src="https://img.shields.io/badge/Electron-47848F?style=flat-square&logo=electron&logoColor=white" /> **Electron** | 32 | Runtime de escritorio |
-| <img src="https://img.shields.io/badge/React-61DAFB?style=flat-square&logo=react&logoColor=black" /> **React** | 18 | UI declarativa |
-| <img src="https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white" /> **TypeScript** | 5 | Tipado estático |
-| <img src="https://img.shields.io/badge/Recharts-22b5bf?style=flat-square&logo=chartdotjs&logoColor=white" /> **Recharts** | 2 | Gráficos SVG (timeline, donut, barras) |
-| <img src="https://img.shields.io/badge/Vite-646CFF?style=flat-square&logo=vite&logoColor=white" /> **electron-vite** | 2 | Build tool + HMR |
-| <img src="https://img.shields.io/badge/electron--builder-47848F?style=flat-square&logo=electron&logoColor=white" /> **electron-builder** | 25 | Empaquetado multiplataforma |
+| <img src="https://img.shields.io/badge/Electron-47848F?style=flat-square&logo=electron&logoColor=white" /> | 32 | Runtime de escritorio |
+| <img src="https://img.shields.io/badge/React-61DAFB?style=flat-square&logo=react&logoColor=black" /> | 18 | UI declarativa |
+| <img src="https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white" /> | 5 | Tipado estático |
+| <img src="https://img.shields.io/badge/Recharts-22b5bf?style=flat-square&logo=chartdotjs&logoColor=white" /> | 2 | Gráficos SVG (timeline, donut, barras) |
+| <img src="https://img.shields.io/badge/Vite-646CFF?style=flat-square&logo=vite&logoColor=white" /> | 2 | Build tool + HMR |
+| <img src="https://img.shields.io/badge/electron--builder-47848F?style=flat-square&logo=electron&logoColor=white" /> | 25 | Empaquetado multiplataforma |
 
 ---
 
