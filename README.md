@@ -16,7 +16,7 @@
 
 ---
 
-> **PULPO** es una aplicación de escritorio IDS/IPS que monitoriza en tiempo real los eventos de seguridad generados por [LogClassifier](https://github.com/1van106/LogClassifier). Procesa logs en streaming, clasifica cada alerta por tipo y severidad, persiste el historial entre sesiones y visualiza la actividad mediante gráficos de análisis — todo dentro de un ejecutable único sin dependencias de servidor.
+> **PULPO** es una aplicación de escritorio IDS/IPS desarrollada de forma independiente, inspirada conceptualmente en [LogClassifier](https://github.com/1van106/LogClassifier). Incorpora su propio pipeline de detección, procesamiento de logs en streaming, clasificación de alertas por tipo y severidad, persistencia de historial entre sesiones y visualización de la actividad mediante gráficos de análisis — todo dentro de un ejecutable único sin dependencias de servidor.
 
 ---
 
@@ -44,11 +44,11 @@
 ## Arquitectura
 
 ```
-LogClassifier IDS                LogClassifier Dashboard
+Pipeline IDS (Python)            PULPO Dashboard
 +------------------+             +------------------------------+
 |  alertas.log     |  fs.watch   |  Main Process (Node.js)      |
 |  (generado por   | ----------> |  watchLogFile()              |
-|   el IDS Python) |             |  tryAppendAlert() → store    |
+|   el módulo IDS) |             |  tryAppendAlert() → store    |
 +------------------+             |  IPC: alert:new              |
                                  +------------------------------+
                                              |
@@ -171,4 +171,4 @@ src/
 
 ---
 
-*PULPO · Proyecto personal · Herramienta complementaria al [LogClassifier IDS](https://github.com/1van106/LogClassifier) · 2026*
+*PULPO · Proyecto personal · Inspirado en el concepto de [LogClassifier IDS](https://github.com/1van106/LogClassifier) · 2026*
