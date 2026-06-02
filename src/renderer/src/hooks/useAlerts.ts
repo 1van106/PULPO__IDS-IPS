@@ -19,10 +19,18 @@ export function useAlerts() {
   }, [])
 
   useEffect(() => {
-    window.api.getAutoPath().then((path) => {
-      if (path) {
-        window.api.watchLog(path)
-        setLogPath(path)
+    // Load persisted history and start watching in parallel
+    Promise.all([
+      window.api.getPersistedAlerts(),
+      window.api.getAutoPath()
+    ]).then(([raws, autoPath]) => {
+      // DB returns oldest-first; reverse so newest appears at top
+      const parsed = raws.map(parseAlert).filter(Boolean) as Alert[]
+      if (parsed.length > 0) setAlerts(parsed.reverse())
+
+      if (autoPath) {
+        window.api.watchLog(autoPath)
+        setLogPath(autoPath)
         setIsMonitoring(true)
       }
     })
@@ -71,5 +79,10 @@ export function useAlerts() {
     ipsCount: blockedIPs.length
   }
 
-  return { alerts, logPath, isMonitoring, openFile, watchPath, blockedIPs, stats }
+  const clearHistory = useCallback(async () => {
+    await window.api.clearAlerts()
+    setAlerts([])
+  }, [])
+
+  return { alerts, logPath, isMonitoring, openFile, watchPath, clearHistory, blockedIPs, stats }
 }

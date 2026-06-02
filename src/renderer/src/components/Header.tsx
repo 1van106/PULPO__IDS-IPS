@@ -1,12 +1,14 @@
-import { ShieldIcon, SwapIcon } from './Icons'
+import { ShieldIcon, SwapIcon, TrashIcon } from './Icons'
 
 interface HeaderProps {
   logPath: string | null
   isMonitoring: boolean
   onChangeFile: () => void
+  onClearHistory: () => void
+  alertCount: number
 }
 
-export default function Header({ logPath, isMonitoring, onChangeFile }: HeaderProps) {
+export default function Header({ logPath, isMonitoring, onChangeFile, onClearHistory, alertCount }: HeaderProps) {
   return (
     <header className="header">
       <div className="header-left">
@@ -36,6 +38,15 @@ export default function Header({ logPath, isMonitoring, onChangeFile }: HeaderPr
       </div>
 
       <div className="header-right">
+        {alertCount > 0 && (
+          <button
+            className="btn btn-ghost btn-danger"
+            onClick={onClearHistory}
+            title="Limpiar historial de alertas"
+          >
+            <TrashIcon /> Limpiar historial
+          </button>
+        )}
         <button className="btn btn-ghost" onClick={onChangeFile}>
           <SwapIcon /> Cambiar fichero
         </button>

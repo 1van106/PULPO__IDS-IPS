@@ -12,16 +12,23 @@ interface DashboardProps {
   blockedIPs: BlockedIP[]
   stats: AppStats
   openFile: () => void
+  clearHistory: () => void
 }
 
 export default function Dashboard({
-  alerts, logPath, isMonitoring, blockedIPs, stats, openFile
+  alerts, logPath, isMonitoring, blockedIPs, stats, openFile, clearHistory
 }: DashboardProps) {
   const freshId = alerts.length > 0 ? alerts[0].id : null
 
   return (
     <div className="dashboard">
-      <Header logPath={logPath} isMonitoring={isMonitoring} onChangeFile={openFile} />
+      <Header
+        logPath={logPath}
+        isMonitoring={isMonitoring}
+        onChangeFile={openFile}
+        onClearHistory={clearHistory}
+        alertCount={alerts.length}
+      />
       <div className="dashboard-body">
         <Pipeline lastAlert={alerts[0]} />
         <Stats stats={stats} />

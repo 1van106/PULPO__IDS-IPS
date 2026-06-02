@@ -8,6 +8,8 @@ declare global {
       watchLog: (path: string) => Promise<string>
       onAlert: (cb: (line: string) => void) => () => void
       getAutoPath: () => Promise<string | null>
+      getPersistedAlerts: () => Promise<string[]>
+      clearAlerts: () => Promise<void>
     }
   }
 }

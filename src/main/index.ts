@@ -2,6 +2,7 @@ import { app, shell, BrowserWindow, ipcMain, dialog } from 'electron'
 import { join } from 'path'
 import { electronApp, is } from '@electron-toolkit/utils'
 import * as fs from 'fs'
+import { loadAlerts, tryAppendAlert, clearAlerts } from './store'
 
 let mainWindow: BrowserWindow | null = null
 let fileWatcher: fs.FSWatcher | null = null
@@ -42,14 +43,18 @@ function watchLogFile(filePath: string): void {
     fileWatcher = null
   }
 
-  // Load existing content first
+  // Load existing content — only send lines not already in DB
   try {
     const stat = fs.statSync(filePath)
     lastSize = stat.size
     const content = fs.readFileSync(filePath, 'utf-8')
     content.split('\n')
       .filter(l => l.trim())
-      .forEach(line => mainWindow?.webContents.send('alert:new', line))
+      .forEach(line => {
+        if (tryAppendAlert(line)) {
+          mainWindow?.webContents.send('alert:new', line)
+        }
+      })
   } catch {
     lastSize = 0
   }
@@ -66,7 +71,11 @@ function watchLogFile(filePath: string): void {
       stream.on('end', () => {
         data.split('\n')
           .filter(l => l.trim())
-          .forEach(line => mainWindow?.webContents.send('alert:new', line))
+          .forEach(line => {
+            if (tryAppendAlert(line)) {
+              mainWindow?.webContents.send('alert:new', line)
+            }
+          })
         lastSize = stat.size
       })
     } catch (e) {
@@ -90,6 +99,10 @@ function findDefaultLog(): string | null {
 
 app.whenReady().then(() => {
   electronApp.setAppUserModelId('dev.ivanbatista.logclassifier-dashboard')
+
+  // Pre-populate seenRaws so file re-reads after restart don't duplicate alerts
+  loadAlerts()
+
   ipcMain.handle('dialog:openLog', async () => {
     const { canceled, filePaths } = await dialog.showOpenDialog(mainWindow!, {
       title: 'Seleccionar alertas.log',
@@ -109,6 +122,13 @@ app.whenReady().then(() => {
   })
 
   ipcMain.handle('log:getAutoPath', () => findDefaultLog())
+
+  ipcMain.handle('db:getAlerts', () => loadAlerts())
+
+  ipcMain.handle('db:clear', () => {
+    clearAlerts()
+    return true
+  })
 
   createWindow()
   app.on('activate', () => {

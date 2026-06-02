@@ -146,6 +146,8 @@ body {
 .btn-green:hover { background: linear-gradient(180deg, #54d268, #36ad4b); }
 .btn-ghost  { background: transparent; }
 .btn-ghost:hover { background: var(--surface); }
+.btn-danger { color: #f85149; }
+.btn-danger:hover { background: rgba(248,81,73,0.1); border-color: rgba(248,81,73,0.4); }
 
 /* ── Section heading ───────────────────────────────────── */
 .sec-head {

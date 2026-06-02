@@ -15,7 +15,13 @@ const api = {
   },
 
   getAutoPath: (): Promise<string | null> =>
-    ipcRenderer.invoke('log:getAutoPath')
+    ipcRenderer.invoke('log:getAutoPath'),
+
+  getPersistedAlerts: (): Promise<string[]> =>
+    ipcRenderer.invoke('db:getAlerts'),
+
+  clearAlerts: (): Promise<void> =>
+    ipcRenderer.invoke('db:clear')
 }
 
 if (process.contextIsolated) {
