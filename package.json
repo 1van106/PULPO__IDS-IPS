@@ -13,7 +13,8 @@
   },
   "dependencies": {
     "@electron-toolkit/preload": "^3.0.0",
-    "@electron-toolkit/utils": "^3.0.0"
+    "@electron-toolkit/utils": "^3.0.0",
+    "recharts": "^3.8.1"
   },
   "devDependencies": {
     "@electron-toolkit/tsconfig": "^1.0.1",

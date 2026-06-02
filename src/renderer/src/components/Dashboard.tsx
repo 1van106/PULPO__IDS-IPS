@@ -2,6 +2,7 @@ import { Alert, AppStats, BlockedIP } from '../types'
 import Header from './Header'
 import Pipeline from './Pipeline'
 import Stats from './Stats'
+import Charts from './Charts'
 import AlertFeed from './AlertFeed'
 import BlockedIPs from './BlockedIPs'
 
@@ -32,6 +33,7 @@ export default function Dashboard({
       <div className="dashboard-body">
         <Pipeline lastAlert={alerts[0]} />
         <Stats stats={stats} />
+        <Charts alerts={alerts} />
         <div className="dashboard-main">
           <AlertFeed alerts={alerts} freshId={freshId} />
           <BlockedIPs ips={blockedIPs} />

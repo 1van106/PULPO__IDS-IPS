@@ -1,4 +1,19 @@
 import { Alert, Severidad, TipoAlerta } from '../types'
+import { DownloadIcon } from './Icons'
+
+function exportCSV(alerts: Alert[]) {
+  const header = 'timestamp,tipo,regla,ip,severidad,duracion\n'
+  const rows = alerts.map(a =>
+    `"${a.timestamp}","${a.tipo}","${a.regla}","${a.ip}","${a.severidad}","${a.duracion ?? ''}"`
+  ).join('\n')
+  const blob = new Blob([header + rows], { type: 'text/csv;charset=utf-8;' })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = `alertas_${new Date().toISOString().split('T')[0]}.csv`
+  link.click()
+  URL.revokeObjectURL(url)
+}
 
 function TypeBadge({ tipo }: { tipo: TipoAlerta }) {
   const cls = tipo === 'BLOQUEO' ? 'b-bloqueo' : tipo === 'ALERTA' ? 'b-alerta' : 'b-baja'
@@ -24,6 +39,16 @@ export default function AlertFeed({ alerts, freshId }: AlertFeedProps) {
         <h3>Eventos en tiempo real</h3>
         <span className="panel-count">{alerts.length}</span>
         <div className="panel-spacer" />
+        {alerts.length > 0 && (
+          <button
+            className="btn btn-ghost"
+            style={{ padding: '5px 10px', fontSize: '12px', gap: '6px' }}
+            onClick={() => exportCSV(alerts)}
+            title="Exportar alertas a CSV"
+          >
+            <DownloadIcon /> CSV
+          </button>
+        )}
         <div className="live-tag">
           <span
             className="pulse-dot"
