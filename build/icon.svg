@@ -40,7 +40,7 @@
     <path id="headPath" d="M198,234 C172,200 176,150 212,130 C234,118 278,118 300,130 C336,150 340,200 314,234 C298,252 214,252 198,234 Z"></path>
     <clipPath id="headClip"><use href="#headPath"></use></clipPath>
 
-    <path id="shieldPath" d="M118,86 L394,86 Q428,86 428,120 L428,250 C428,338 360,410 256,452 C152,410 84,338 84,250 L84,120 Q84,86 118,86 Z"></path>
+    <path id="shieldPath" d="M118,86 L394,86 Q428,86 428,120 L428,250 C428,338 364,418 256,442 C148,418 84,338 84,250 L84,120 Q84,86 118,86 Z"></path>
 
     <pattern id="mesh" width="20" height="20" patternUnits="userSpaceOnUse">
       <path d="M10,0 L20,10 L10,20 L0,10 Z" fill="none" stroke="#00d4ff" stroke-width="0.8" stroke-opacity="0.5"></path>
