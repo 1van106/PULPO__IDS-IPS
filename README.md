@@ -162,4 +162,4 @@ src/
 
 ---
 
-*Master en Ciberseguridad · EUSA · 2026*
+*Proyecto personal · Desarrollado como herramienta complementaria al [LogClassifier IDS](https://github.com/1van106/LogClassifier) · 2026*
