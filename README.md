@@ -171,14 +171,14 @@ src/
 
 ## Stack tecnológico
 
-| Herramienta | Versión | Uso |
-|---|---|---|
-| Electron | 32 | Runtime de escritorio |
-| React | 18 | UI declarativa |
-| TypeScript | 5 | Tipado estático |
-| Recharts | 2 | Gráficos SVG (timeline, donut, barras) |
-| electron-vite | 2 | Build tool + HMR |
-| electron-builder | 25 | Empaquetado multiplataforma |
+| | Herramienta | Versión | Uso |
+|---|---|---|---|
+| <img src="https://img.shields.io/badge/-Electron-47848F?style=flat-square&logo=electron&logoColor=white" /> | Electron | 32 | Runtime de escritorio |
+| <img src="https://img.shields.io/badge/-React-61DAFB?style=flat-square&logo=react&logoColor=black" /> | React | 18 | UI declarativa |
+| <img src="https://img.shields.io/badge/-TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white" /> | TypeScript | 5 | Tipado estático |
+| <img src="https://img.shields.io/badge/-Recharts-22b5bf?style=flat-square&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZmlsbD0id2hpdGUiIGQ9Ik0xMiAyQzYuNDggMiAyIDYuNDggMiAxMnM0LjQ4IDEwIDEwIDEwIDEwLTQuNDggMTAtMTBTMTcuNTIgMiAxMiAyem0tMSAxNEg5VjhoMnY4em00IDBIWTV2LTJoMlY4aDJ2OHoiLz48L3N2Zz4=&logoColor=white" /> | Recharts | 2 | Gráficos SVG (timeline, donut, barras) |
+| <img src="https://img.shields.io/badge/-Vite-646CFF?style=flat-square&logo=vite&logoColor=white" /> | electron-vite | 2 | Build tool + HMR |
+| <img src="https://img.shields.io/badge/-electron--builder-2c2c2c?style=flat-square&logo=electron&logoColor=white" /> | electron-builder | 25 | Empaquetado multiplataforma |
 
 ---
 
