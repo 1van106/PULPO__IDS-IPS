@@ -1,13 +1,22 @@
-# PULPO 🐙
+<p align="center">
+  <img src="build/icon.svg" width="160" alt="PULPO icon" />
+</p>
 
-> Monitor IDS de escritorio para monitorización en tiempo real de alertas generadas por [LogClassifier IDS](https://github.com/1van106/LogClassifier).
+<h1 align="center">PULPO</h1>
+<p align="center"><b>IDS / IPS Monitor</b></p>
 
-![Electron](https://img.shields.io/badge/Electron-32-47848F?style=flat-square&logo=electron&logoColor=white&labelColor=1a1a2e)
-![React](https://img.shields.io/badge/React-18-61DAFB?style=flat-square&logo=react&logoColor=white&labelColor=1a1a2e)
-![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=flat-square&logo=typescript&logoColor=white&labelColor=1a1a2e)
-![Vite](https://img.shields.io/badge/Vite-5-646CFF?style=flat-square&logo=vite&logoColor=white&labelColor=1a1a2e)
-![Linux](https://img.shields.io/badge/Linux-AppImage-FCC624?style=flat-square&logo=linux&logoColor=white&labelColor=1a1a2e)
-![Windows](https://img.shields.io/badge/Windows-NSIS-0078D6?style=flat-square&logo=windows&logoColor=white&labelColor=1a1a2e)
+<p align="center">
+  <img src="https://img.shields.io/badge/Electron-32-47848F?style=flat-square&logo=electron&logoColor=white&labelColor=1a1a2e" />
+  <img src="https://img.shields.io/badge/React-18-61DAFB?style=flat-square&logo=react&logoColor=white&labelColor=1a1a2e" />
+  <img src="https://img.shields.io/badge/TypeScript-5-3178C6?style=flat-square&logo=typescript&logoColor=white&labelColor=1a1a2e" />
+  <img src="https://img.shields.io/badge/Vite-5-646CFF?style=flat-square&logo=vite&logoColor=white&labelColor=1a1a2e" />
+  <img src="https://img.shields.io/badge/Linux-AppImage-FCC624?style=flat-square&logo=linux&logoColor=white&labelColor=1a1a2e" />
+  <img src="https://img.shields.io/badge/Windows-NSIS-0078D6?style=flat-square&logo=windows&logoColor=white&labelColor=1a1a2e" />
+</p>
+
+---
+
+> **PULPO** es una aplicación de escritorio IDS/IPS que monitoriza en tiempo real los eventos de seguridad generados por [LogClassifier](https://github.com/1van106/LogClassifier). Procesa logs en streaming, clasifica cada alerta por tipo y severidad, persiste el historial entre sesiones y visualiza la actividad mediante gráficos de análisis — todo dentro de un ejecutable único sin dependencias de servidor.
 
 ---
 
@@ -95,8 +104,8 @@ El dashboard espera líneas con este formato (el mismo que genera LogClassifier)
 
 ```bash
 # Clonar el repositorio
-git clone https://github.com/1van106/LogClassifier_Dashboard.git
-cd LogClassifier_Dashboard
+git clone https://github.com/1van106/PULPO-IDS-IPS.git
+cd PULPO-IDS-IPS
 
 # Instalar dependencias
 npm install
