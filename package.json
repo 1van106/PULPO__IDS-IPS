@@ -1,7 +1,7 @@
 {
-  "name": "logclassifier-dashboard",
+  "name": "pulpo",
   "version": "1.0.0",
-  "description": "Dashboard visual para LogClassifier IDS",
+  "description": "Monitor IDS en tiempo real para LogClassifier",
   "main": "out/main/index.js",
   "author": "Iván Batista Herrero",
   "scripts": {

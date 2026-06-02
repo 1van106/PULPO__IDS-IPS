@@ -98,7 +98,7 @@ function findDefaultLog(): string | null {
 }
 
 app.whenReady().then(() => {
-  electronApp.setAppUserModelId('dev.ivanbatista.logclassifier-dashboard')
+  electronApp.setAppUserModelId('dev.ivanbatista.pulpo')
 
   // Pre-populate seenRaws so file re-reads after restart don't duplicate alerts
   loadAlerts()

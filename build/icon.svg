@@ -1,0 +1,107 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <filter id="glow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="2.6" result="b1"></feGaussianBlur>
+      <feGaussianBlur stdDeviation="10" result="b2"></feGaussianBlur>
+      <feMerge>
+        <feMergeNode in="b2"></feMergeNode>
+        <feMergeNode in="b1"></feMergeNode>
+        <feMergeNode in="SourceGraphic"></feMergeNode>
+      </feMerge>
+    </filter>
+    <filter id="shieldGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="2.4" result="s1"></feGaussianBlur>
+      <feGaussianBlur stdDeviation="8" result="s2"></feGaussianBlur>
+      <feMerge>
+        <feMergeNode in="s2"></feMergeNode>
+        <feMergeNode in="s1"></feMergeNode>
+        <feMergeNode in="SourceGraphic"></feMergeNode>
+      </feMerge>
+    </filter>
+    <filter id="softglow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="3"></feGaussianBlur>
+    </filter>
+
+    <radialGradient id="headFill" cx="50%" cy="36%" r="66%">
+      <stop offset="0%" stop-color="#00d4ff" stop-opacity="0.28"></stop>
+      <stop offset="60%" stop-color="#00d4ff" stop-opacity="0.10"></stop>
+      <stop offset="100%" stop-color="#00d4ff" stop-opacity="0.02"></stop>
+    </radialGradient>
+    <radialGradient id="bgGlow" cx="50%" cy="42%" r="58%">
+      <stop offset="0%" stop-color="#0a2230"></stop>
+      <stop offset="100%" stop-color="#0d1117"></stop>
+    </radialGradient>
+    <radialGradient id="shieldFill" cx="50%" cy="30%" r="80%">
+      <stop offset="0%" stop-color="#0d3a4c" stop-opacity="0.85"></stop>
+      <stop offset="55%" stop-color="#0a2734" stop-opacity="0.8"></stop>
+      <stop offset="100%" stop-color="#08151c" stop-opacity="0.92"></stop>
+    </radialGradient>
+
+    <path id="headPath" d="M198,234 C172,200 176,150 212,130 C234,118 278,118 300,130 C336,150 340,200 314,234 C298,252 214,252 198,234 Z"></path>
+    <clipPath id="headClip"><use href="#headPath"></use></clipPath>
+
+    <path id="shieldPath" d="M118,86 L394,86 Q428,86 428,120 L428,250 C428,338 360,410 256,452 C152,410 84,338 84,250 L84,120 Q84,86 118,86 Z"></path>
+
+    <pattern id="mesh" width="20" height="20" patternUnits="userSpaceOnUse">
+      <path d="M10,0 L20,10 L10,20 L0,10 Z" fill="none" stroke="#00d4ff" stroke-width="0.8" stroke-opacity="0.5"></path>
+    </pattern>
+  </defs>
+
+  <rect width="512" height="512" fill="#0d1117"></rect>
+  <rect width="512" height="512" fill="url(#bgGlow)"></rect>
+
+  
+  <use href="#shieldPath" fill="url(#shieldFill)"></use>
+  <g fill="none" stroke="#00d4ff" stroke-linejoin="round" filter="url(#shieldGlow)">
+    <use href="#shieldPath" stroke-width="6"></use>
+    <use href="#shieldPath" stroke-width="2.4" stroke-opacity="0.4" transform="translate(256,250) scale(0.93) translate(-256,-250)"></use>
+  </g>
+
+  
+  <g transform="translate(0,-4) translate(256,261) scale(0.66) translate(-256,-261)">
+
+    <g fill="none" stroke="#00d4ff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)">
+      <path d="M246,248 C240,310 236,360 224,418"></path>
+      <path d="M228,246 C206,300 196,356 168,398"></path>
+      <path d="M212,240 C176,278 150,330 120,362"></path>
+      <path d="M198,232 C156,256 110,282 84,312"></path>
+      <path d="M266,248 C272,310 276,360 288,418"></path>
+      <path d="M284,246 C306,300 316,356 344,398"></path>
+      <path d="M300,240 C336,278 362,330 392,362"></path>
+      <path d="M314,232 C356,256 402,282 428,312"></path>
+
+      <use href="#headPath" fill="url(#headFill)"></use>
+
+      <polygon points="219,182 233,182 240,194 233,206 219,206 212,194"></polygon>
+      <polygon points="279,182 293,182 300,194 293,206 279,206 272,194"></polygon>
+    </g>
+
+    <g clip-path="url(#headClip)" opacity="0.16" filter="url(#softglow)">
+      <rect x="180" y="120" width="160" height="135" fill="url(#mesh)"></rect>
+    </g>
+
+    <g fill="#36c4ee" filter="url(#softglow)">
+      <circle cx="237" cy="318" r="3.4"></circle><circle cx="230" cy="375" r="2.6"></circle>
+      <circle cx="204" cy="318" r="3.4"></circle><circle cx="185" cy="368" r="2.6"></circle>
+      <circle cx="168" cy="296" r="3.4"></circle><circle cx="140" cy="333" r="2.6"></circle>
+      <circle cx="153" cy="263" r="3.4"></circle><circle cx="111" cy="291" r="2.6"></circle>
+      <circle cx="275" cy="318" r="3.4"></circle><circle cx="282" cy="375" r="2.6"></circle>
+      <circle cx="308" cy="318" r="3.4"></circle><circle cx="327" cy="368" r="2.6"></circle>
+      <circle cx="344" cy="296" r="3.4"></circle><circle cx="372" cy="333" r="2.6"></circle>
+      <circle cx="359" cy="263" r="3.4"></circle><circle cx="401" cy="291" r="2.6"></circle>
+    </g>
+
+    <g fill="#7fe9ff" filter="url(#glow)">
+      <circle cx="224" cy="418" r="6"></circle>
+      <circle cx="168" cy="398" r="6"></circle>
+      <circle cx="120" cy="362" r="6"></circle>
+      <circle cx="84" cy="312" r="6"></circle>
+      <circle cx="288" cy="418" r="6"></circle>
+      <circle cx="344" cy="398" r="6"></circle>
+      <circle cx="392" cy="362" r="6"></circle>
+      <circle cx="428" cy="312" r="6"></circle>
+      <circle cx="226" cy="194" r="4"></circle>
+      <circle cx="286" cy="194" r="4"></circle>
+    </g>
+  </g>
+</svg>

@@ -1,6 +1,6 @@
-# LogClassifier Dashboard ⚡
+# PULPO 🐙
 
-> Aplicación de escritorio para monitorización en tiempo real de alertas generadas por [LogClassifier IDS](https://github.com/1van106/LogClassifier).
+> Monitor IDS de escritorio para monitorización en tiempo real de alertas generadas por [LogClassifier IDS](https://github.com/1van106/LogClassifier).
 
 ![Electron](https://img.shields.io/badge/Electron-32-47848F?style=flat-square&logo=electron&logoColor=white&labelColor=1a1a2e)
 ![React](https://img.shields.io/badge/React-18-61DAFB?style=flat-square&logo=react&logoColor=white&labelColor=1a1a2e)
@@ -162,4 +162,4 @@ src/
 
 ---
 
-*Proyecto personal · Desarrollado como herramienta complementaria al [LogClassifier IDS](https://github.com/1van106/LogClassifier) · 2026*
+*PULPO · Proyecto personal · Herramienta complementaria al [LogClassifier IDS](https://github.com/1van106/LogClassifier) · 2026*

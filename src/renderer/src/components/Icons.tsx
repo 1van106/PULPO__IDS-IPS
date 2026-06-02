@@ -7,6 +7,57 @@ export function ShieldIcon({ size = 16 }: { size?: number }) {
   )
 }
 
+export function OctopusIcon({ size = 32 }: { size?: number }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width={size} height={size}>
+      <defs>
+        <filter id="oi-glow" x="-60%" y="-60%" width="220%" height="220%">
+          <feGaussianBlur stdDeviation="2.6" result="b1"/>
+          <feGaussianBlur stdDeviation="10" result="b2"/>
+          <feMerge><feMergeNode in="b2"/><feMergeNode in="b1"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+        <filter id="oi-soft" x="-60%" y="-60%" width="220%" height="220%">
+          <feGaussianBlur stdDeviation="3"/>
+        </filter>
+        <radialGradient id="oi-head" cx="50%" cy="36%" r="66%">
+          <stop offset="0%" stopColor="#00d4ff" stopOpacity="0.28"/>
+          <stop offset="100%" stopColor="#00d4ff" stopOpacity="0.02"/>
+        </radialGradient>
+        <path id="oi-hp" d="M198,234 C172,200 176,150 212,130 C234,118 278,118 300,130 C336,150 340,200 314,234 C298,252 214,252 198,234 Z"/>
+        <clipPath id="oi-hc"><use href="#oi-hp"/></clipPath>
+        <pattern id="oi-mesh" width="20" height="20" patternUnits="userSpaceOnUse">
+          <path d="M10,0 L20,10 L10,20 L0,10 Z" fill="none" stroke="#00d4ff" strokeWidth="0.8" strokeOpacity="0.5"/>
+        </pattern>
+      </defs>
+      <g transform="translate(256,261) scale(0.66) translate(-256,-261)">
+        <g fill="none" stroke="#00d4ff" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" filter="url(#oi-glow)">
+          <path d="M246,248 C240,310 236,360 224,418"/>
+          <path d="M228,246 C206,300 196,356 168,398"/>
+          <path d="M212,240 C176,278 150,330 120,362"/>
+          <path d="M198,232 C156,256 110,282 84,312"/>
+          <path d="M266,248 C272,310 276,360 288,418"/>
+          <path d="M284,246 C306,300 316,356 344,398"/>
+          <path d="M300,240 C336,278 362,330 392,362"/>
+          <path d="M314,232 C356,256 402,282 428,312"/>
+          <use href="#oi-hp" fill="url(#oi-head)"/>
+          <polygon points="219,182 233,182 240,194 233,206 219,206 212,194"/>
+          <polygon points="279,182 293,182 300,194 293,206 279,206 272,194"/>
+        </g>
+        <g clipPath="url(#oi-hc)" opacity="0.16" filter="url(#oi-soft)">
+          <rect x="180" y="120" width="160" height="135" fill="url(#oi-mesh)"/>
+        </g>
+        <g fill="#7fe9ff" filter="url(#oi-glow)">
+          <circle cx="224" cy="418" r="6"/><circle cx="168" cy="398" r="6"/>
+          <circle cx="120" cy="362" r="6"/><circle cx="84" cy="312" r="6"/>
+          <circle cx="288" cy="418" r="6"/><circle cx="344" cy="398" r="6"/>
+          <circle cx="392" cy="362" r="6"/><circle cx="428" cy="312" r="6"/>
+          <circle cx="226" cy="194" r="4"/><circle cx="286" cy="194" r="4"/>
+        </g>
+      </g>
+    </svg>
+  )
+}
+
 export function SwapIcon() {
   return (
     <svg width="15" height="15" viewBox="0 0 24 24" fill="none"

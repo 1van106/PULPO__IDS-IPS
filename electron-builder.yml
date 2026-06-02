@@ -1,5 +1,5 @@
-appId: dev.ivanbatista.logclassifier-dashboard
-productName: LogClassifier Dashboard
+appId: dev.ivanbatista.pulpo
+productName: PULPO
 copyright: Copyright © 2026 Iván Batista Herrero
 directories:
   buildResources: build
@@ -14,11 +14,13 @@ linux:
       arch: [x64]
   category: Utility
   maintainer: Iván Batista Herrero
+  icon: build/icon.png
 win:
   target:
     - target: nsis
       arch: [x64]
-  executableName: LogClassifier Dashboard
+  executableName: PULPO
+  icon: build/icon.svg
 nsis:
   artifactName: ${productName}-${version}-setup.${ext}
   shortcutName: ${productName}

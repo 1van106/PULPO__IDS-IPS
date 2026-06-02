@@ -1,4 +1,4 @@
-import { ShieldIcon } from './Icons'
+import { OctopusIcon } from './Icons'
 
 interface WelcomeProps {
   onOpen: () => void
@@ -9,23 +9,23 @@ export default function Welcome({ onOpen }: WelcomeProps) {
     <div className="welcome">
       <div className="welcome-card">
         <div className="welcome-shield">
-          <ShieldIcon size={46} />
+          <OctopusIcon size={58} />
         </div>
-        <h1 className="welcome-title">LogClassifier</h1>
-        <p className="welcome-sub">IDS Dashboard</p>
+        <h1 className="welcome-title">PULPO</h1>
+        <p className="welcome-sub">IDS Monitor</p>
         <p className="welcome-desc">
           Clasificación y correlación de eventos de seguridad en tiempo real.
           Selecciona un fichero de log para iniciar la monitorización.
         </p>
         <button className="btn btn-green" style={{ fontSize: '14px', padding: '12px 22px' }} onClick={onOpen}>
-          <ShieldIcon size={16} /> Seleccionar alertas.log
+          <OctopusIcon size={16} /> Seleccionar alertas.log
         </button>
         <div className="welcome-hint">
-          ruta esperada <code>/var/log/ids/alertas.log</code>
+          ruta esperada <code>/opt/LogClassifier/alertas.log</code>
         </div>
       </div>
       <div className="welcome-foot">
-        LogClassifier v1.0.0 · motor de reglas activo · electron build
+        PULPO v1.0.0 · IDS Monitor · electron build
       </div>
     </div>
   )

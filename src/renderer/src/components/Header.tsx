@@ -1,4 +1,4 @@
-import { ShieldIcon, SwapIcon, TrashIcon } from './Icons'
+import { OctopusIcon, SwapIcon, TrashIcon } from './Icons'
 
 interface HeaderProps {
   logPath: string | null
@@ -13,11 +13,11 @@ export default function Header({ logPath, isMonitoring, onChangeFile, onClearHis
     <header className="header">
       <div className="header-left">
         <div className="hdr-mark">
-          <ShieldIcon size={18} />
+          <OctopusIcon size={26} />
         </div>
         <div className="header-titles">
-          <span className="header-title">LogClassifier</span>
-          <span className="header-sub">IDS Dashboard</span>
+          <span className="header-title">PULPO</span>
+          <span className="header-sub">IDS Monitor</span>
         </div>
       </div>
 

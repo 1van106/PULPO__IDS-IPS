@@ -99,10 +99,10 @@ body {
 .hdr-mark {
   width: 34px; height: 34px; border-radius: 9px;
   display: grid; place-items: center;
-  background: linear-gradient(160deg, #1f6f33, #0f3d1d);
-  border: 1px solid rgba(63,185,80,0.4);
-  box-shadow: 0 0 calc(14px * var(--glow)) rgba(63,185,80,0.25);
-  font-size: 18px; color: var(--green);
+  background: linear-gradient(160deg, #0d3a4c, #071d28);
+  border: 1px solid rgba(0,212,255,0.4);
+  box-shadow: 0 0 calc(14px * var(--glow)) rgba(0,212,255,0.25);
+  color: #00d4ff;
 }
 .header-titles { display: flex; flex-direction: column; line-height: 1.15; }
 .header-title  { font-weight: 700; font-size: 15px; letter-spacing: -0.01em; }
