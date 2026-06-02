@@ -6,6 +6,9 @@ directories:
   output: dist
 files:
   - out/**/*
+extraResources:
+  - from: build/icon.png
+    to: icon.png
 linux:
   target:
     - target: AppImage

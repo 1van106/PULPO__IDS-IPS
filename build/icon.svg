@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="-32 -24 576 560" width="512" height="512">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-50 -50 612 612" width="512" height="512">
   <defs>
     <filter id="glow" x="-60%" y="-60%" width="220%" height="220%">
       <feGaussianBlur stdDeviation="2.6" result="b1"></feGaussianBlur>
@@ -47,8 +47,8 @@
     </pattern>
   </defs>
 
-  <rect x="-32" y="-24" width="576" height="560" fill="#0d1117"></rect>
-  <rect x="-32" y="-24" width="576" height="560" fill="url(#bgGlow)"></rect>
+  <rect x="-50" y="-50" width="612" height="612" fill="#0d1117"></rect>
+  <rect x="-50" y="-50" width="612" height="612" fill="url(#bgGlow)"></rect>
 
   
   <use href="#shieldPath" fill="url(#shieldFill)"></use>
