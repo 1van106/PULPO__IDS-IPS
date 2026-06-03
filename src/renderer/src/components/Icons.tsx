@@ -9,7 +9,7 @@ export function ShieldIcon({ size = 16 }: { size?: number }) {
 
 export function OctopusIcon({ size = 32 }: { size?: number }) {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="19 50 474 474" width={size} height={size}>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="49 62 414 414" width={size} height={size} overflow="visible">
       <defs>
         <filter id="oi-glow" x="-60%" y="-60%" width="220%" height="220%">
           <feGaussianBlur stdDeviation="2.6" result="b1"/>
@@ -44,9 +44,6 @@ export function OctopusIcon({ size = 32 }: { size?: number }) {
           <path d="M10,0 L20,10 L10,20 L0,10 Z" fill="none" stroke="#00d4ff" strokeWidth="0.8" strokeOpacity="0.5"/>
         </pattern>
       </defs>
-      {/* Background */}
-      <rect width="512" height="512" fill="#0d1117"/>
-      <rect width="512" height="512" fill="url(#oi-bg)"/>
       {/* Shield */}
       <use href="#oi-sp" fill="url(#oi-sf)"/>
       <g fill="none" stroke="#00d4ff" strokeLinejoin="round" filter="url(#oi-sg)">

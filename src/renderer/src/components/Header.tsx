@@ -13,7 +13,7 @@ export default function Header({ logPath, isMonitoring, onChangeFile, onClearHis
     <header className="header">
       <div className="header-left">
         <div className="hdr-mark">
-          <OctopusIcon size={34} />
+          <OctopusIcon size={28} />
         </div>
         <div className="header-titles">
           <span className="header-title">PULPO</span>
