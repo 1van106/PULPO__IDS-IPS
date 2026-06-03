@@ -9,7 +9,7 @@ export function ShieldIcon({ size = 16 }: { size?: number }) {
 
 export function OctopusIcon({ size = 32 }: { size?: number }) {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="19 32 474 474" width={size} height={size}>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="19 50 474 474" width={size} height={size}>
       <defs>
         <filter id="oi-glow" x="-60%" y="-60%" width="220%" height="220%">
           <feGaussianBlur stdDeviation="2.6" result="b1"/>
