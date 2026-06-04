@@ -81,12 +81,15 @@ interface AlertFeedProps {
 export default function AlertFeed({ alerts, freshId, onAcknowledge }: AlertFeedProps) {
   const [filterTipo, setFilterTipo] = useState<FilterVal>('ALL')
   const [filterSev,  setFilterSev]  = useState<FilterVal>('ALL')
+  const [query,      setQuery]      = useState('')
 
-  const active = filterTipo !== 'ALL' || filterSev !== 'ALL'
+  const active = filterTipo !== 'ALL' || filterSev !== 'ALL' || query !== ''
 
+  const q = query.toLowerCase()
   const visible = alerts
     .filter(a => filterTipo === 'ALL' || a.tipo      === filterTipo)
     .filter(a => filterSev  === 'ALL' || a.severidad === filterSev)
+    .filter(a => !q || a.regla.toLowerCase().includes(q) || a.ip.includes(q))
 
   const colSpan = onAcknowledge ? 7 : 6
 
@@ -121,6 +124,23 @@ export default function AlertFeed({ alerts, freshId, onAcknowledge }: AlertFeedP
       <div className="filterbar">
         <FilterSegment label="Tipo"      options={TYPE_OPTS} value={filterTipo} onChange={setFilterTipo} />
         <FilterSegment label="Severidad" options={SEV_OPTS}  value={filterSev}  onChange={setFilterSev}  />
+        <div className="filter-field">
+          <span className="field-label">Buscar</span>
+          <div className="fb-search-wrap">
+            <input
+              type="text"
+              className="fb-search"
+              placeholder="regla o IP…"
+              value={query}
+              onChange={e => setQuery(e.target.value)}
+              spellCheck={false}
+              autoComplete="off"
+            />
+            {query && (
+              <button type="button" className="fb-search-x" onClick={() => setQuery('')}>✕</button>
+            )}
+          </div>
+        </div>
         <div className="fb-spacer" />
         <span className="fb-result">
           <b>{visible.length}</b> / {alerts.length} eventos
@@ -129,7 +149,7 @@ export default function AlertFeed({ alerts, freshId, onAcknowledge }: AlertFeedP
           type="button"
           className="fb-clear"
           disabled={!active}
-          onClick={() => { setFilterTipo('ALL'); setFilterSev('ALL') }}
+          onClick={() => { setFilterTipo('ALL'); setFilterSev('ALL'); setQuery('') }}
         >
           ✕ Limpiar
         </button>
