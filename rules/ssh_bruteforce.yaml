@@ -1,5 +1,5 @@
 # ============================================================
-#  Regla: Fuerza Bruta SSH
+#  Reglas: Ataques SSH
 # ============================================================
 
 rules:
@@ -7,12 +7,12 @@ rules:
     nombre: "Fuerza bruta SSH"
     descripcion: "Detecta múltiples fallos de autenticación SSH desde la misma IP"
     fuente: "auth_log"
-    severidad: "ALTA"           # BAJA | MEDIA | ALTA | CRITICA
+    severidad: "ALTA"
     patron: 'Failed password for .* from (?P<ip>\d+\.\d+\.\d+\.\d+) port'
-    grupo_ip: "ip"              # nombre del grupo regex que contiene la IP
-    umbral: 5                   # número de eventos en la ventana para disparar
+    grupo_ip: "ip"
+    umbral: 5
     ventana_segundos: 60
-    accion: "bloquear_ip"       # bloquear_ip | alertar | registrar
+    accion: "bloquear_ip"
 
   - id: "SSH_INVALID_USER"
     nombre: "Usuario inválido SSH"
@@ -27,7 +27,7 @@ rules:
 
   - id: "SSH_ROOT_LOGIN"
     nombre: "Intento login root SSH"
-    descripcion: "Detecta intentos de acceso como root"
+    descripcion: "Detecta intentos de acceso directo como root"
     fuente: "auth_log"
     severidad: "ALTA"
     patron: 'Failed password for root from (?P<ip>\d+\.\d+\.\d+\.\d+)'
@@ -35,3 +35,25 @@ rules:
     umbral: 2
     ventana_segundos: 60
     accion: "bloquear_ip"
+
+  - id: "SSH_PENALTY"
+    nombre: "Penalización OpenSSH"
+    descripcion: "Detecta conexiones bloqueadas por el sistema de penalización de OpenSSH 10+"
+    fuente: "auth_log"
+    severidad: "ALTA"
+    patron: 'drop connection #\d+ from \[(?P<ip>\d+\.\d+\.\d+\.\d+)\].*penalty'
+    grupo_ip: "ip"
+    umbral: 5
+    ventana_segundos: 60
+    accion: "bloquear_ip"
+
+  - id: "SSH_RAPID_DISCO"
+    nombre: "Desconexiones SSH rápidas"
+    descripcion: "Detecta múltiples conexiones que se cierran antes de autenticar (posible scanner)"
+    fuente: "auth_log"
+    severidad: "BAJA"
+    patron: 'Connection closed by (?:invalid user \S+ )?(?P<ip>\d+\.\d+\.\d+\.\d+) port \d+ \[preauth\]'
+    grupo_ip: "ip"
+    umbral: 6
+    ventana_segundos: 30
+    accion: "alertar"

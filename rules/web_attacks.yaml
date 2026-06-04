@@ -1,5 +1,5 @@
 # ============================================================
-#  Regla: Ataques Web
+#  Reglas: Ataques Web (nginx access log)
 # ============================================================
 
 rules:
@@ -23,4 +23,81 @@ rules:
     grupo_ip: "ip"
     umbral: 5
     ventana_segundos: 60
+    accion: "bloquear_ip"
+
+  - id: "SQL_INJECTION"
+    nombre: "Inyección SQL"
+    descripcion: "Detecta patrones de SQL injection en peticiones HTTP"
+    fuente: "syslog"
+    severidad: "CRITICA"
+    patron: '(?i)(?P<ip>\d+\.\d+\.\d+\.\d+).*(?:union.{0,20}select|%27.{0,30}--|select.{0,10}from|drop.{0,10}table|or.{0,5}1.{0,5}%3[Dd]1|insert.{0,10}into|%27%20or%20)'
+    grupo_ip: "ip"
+    umbral: 2
+    ventana_segundos: 60
+    accion: "bloquear_ip"
+
+  - id: "XSS_ATTEMPT"
+    nombre: "Intento de XSS"
+    descripcion: "Detecta payloads de Cross-Site Scripting en peticiones HTTP"
+    fuente: "syslog"
+    severidad: "ALTA"
+    patron: '(?i)(?P<ip>\d+\.\d+\.\d+\.\d+).*(?:%3[Cc]script|<script|onerror%3[Dd]|onerror=|onload%3[Dd]|javascript%3[Aa]|alert%28|%3[Cc]img)'
+    grupo_ip: "ip"
+    umbral: 2
+    ventana_segundos: 60
+    accion: "bloquear_ip"
+
+  - id: "PATH_TRAVERSAL"
+    nombre: "Path Traversal"
+    descripcion: "Detecta intentos de acceder a ficheros fuera del directorio web"
+    fuente: "syslog"
+    severidad: "ALTA"
+    patron: '(?P<ip>\d+\.\d+\.\d+\.\d+).*(?:\.\./|\.\.%2[fF]|%2[eE]%2[eE][/%]|%2[eE]{2}/)'
+    grupo_ip: "ip"
+    umbral: 2
+    ventana_segundos: 30
+    accion: "bloquear_ip"
+
+  - id: "CMD_INJECTION"
+    nombre: "Inyección de comandos"
+    descripcion: "Detecta intentos de ejecutar comandos del sistema a través de la web"
+    fuente: "syslog"
+    severidad: "CRITICA"
+    patron: '(?i)(?P<ip>\d+\.\d+\.\d+\.\d+).*(?:%7[Cc]|%3[Bb]).{0,40}(?:cat|bash|sh|wget|curl|whoami|passwd|shadow|id%20)'
+    grupo_ip: "ip"
+    umbral: 1
+    ventana_segundos: 60
+    accion: "bloquear_ip"
+
+  - id: "SENSITIVE_FILE"
+    nombre: "Acceso a fichero sensible"
+    descripcion: "Detecta peticiones a ficheros de configuración o credenciales"
+    fuente: "syslog"
+    severidad: "ALTA"
+    patron: '(?i)(?P<ip>\d+\.\d+\.\d+\.\d+).+(?:\.env|wp-config\.php|\.git/config|etc/passwd|etc/shadow|\.htaccess|\.htpasswd|/config\.php|database\.php|\.aws/|\.ssh/)'
+    grupo_ip: "ip"
+    umbral: 1
+    ventana_segundos: 60
+    accion: "alertar"
+
+  - id: "SCANNER_UA"
+    nombre: "User-Agent de escáner"
+    descripcion: "Detecta herramientas de pentesting conocidas por su User-Agent"
+    fuente: "syslog"
+    severidad: "MEDIA"
+    patron: '(?i)(?P<ip>\d+\.\d+\.\d+\.\d+).+"(?:sqlmap|nikto|nessus|masscan|nmap|zgrab|gobuster|dirbuster|hydra|metasploit|burpsuite|acunetix|wfuzz|dirb|nuclei|zaproxy)[^"]*"'
+    grupo_ip: "ip"
+    umbral: 1
+    ventana_segundos: 60
+    accion: "alertar"
+
+  - id: "HTTP_FLOOD"
+    nombre: "HTTP Flood"
+    descripcion: "Detecta un volumen anormalmente alto de peticiones desde una sola IP"
+    fuente: "syslog"
+    severidad: "ALTA"
+    patron: '(?P<ip>\d+\.\d+\.\d+\.\d+) - -'
+    grupo_ip: "ip"
+    umbral: 30
+    ventana_segundos: 10
     accion: "bloquear_ip"
