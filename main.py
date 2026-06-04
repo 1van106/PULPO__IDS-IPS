@@ -82,6 +82,20 @@ class LogClassifier:
             callback=self.motor.procesar_linea,
         )
 
+        api_cfg = self.config.get("api", {})
+        if api_cfg.get("enabled", True):
+            import threading
+            from api import run_server
+            host = api_cfg.get("host", "0.0.0.0")
+            port = api_cfg.get("port", 8080)
+            threading.Thread(
+                target=run_server,
+                kwargs={"host": host, "port": port},
+                daemon=True,
+                name="pulpo-api",
+            ).start()
+            self.logger.info(f"API REST iniciada → http://{host}:{port}/docs")
+
     # ------------------------------------------------------------------
     # Ciclo de vida
     # ------------------------------------------------------------------
