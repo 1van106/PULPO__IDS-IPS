@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Alert, Severidad, TipoAlerta } from '../types'
-import { DownloadIcon } from './Icons'
+import { DownloadIcon, FilterIcon } from './Icons'
 
 function exportCSV(alerts: Alert[]) {
   const header = 'timestamp,tipo,regla,ip,severidad,duracion\n'
@@ -79,11 +79,16 @@ interface AlertFeedProps {
 }
 
 export default function AlertFeed({ alerts, freshId, onAcknowledge }: AlertFeedProps) {
-  const [filterTipo, setFilterTipo] = useState<FilterVal>('ALL')
-  const [filterSev,  setFilterSev]  = useState<FilterVal>('ALL')
-  const [query,      setQuery]      = useState('')
+  const [filterTipo,  setFilterTipo]  = useState<FilterVal>('ALL')
+  const [filterSev,   setFilterSev]   = useState<FilterVal>('ALL')
+  const [query,       setQuery]       = useState('')
+  const [filtersOpen, setFiltersOpen] = useState(false)
 
-  const active = filterTipo !== 'ALL' || filterSev !== 'ALL' || query !== ''
+  const activeCount =
+    (filterTipo !== 'ALL' ? 1 : 0) +
+    (filterSev  !== 'ALL' ? 1 : 0) +
+    (query !== ''         ? 1 : 0)
+  const active = activeCount > 0
 
   const q = query.toLowerCase()
   const visible = alerts
@@ -99,6 +104,16 @@ export default function AlertFeed({ alerts, freshId, onAcknowledge }: AlertFeedP
         <h3>Eventos en tiempo real</h3>
         <span className="panel-count">{visible.length}</span>
         <div className="panel-spacer" />
+        <button
+          className={`btn btn-ghost fb-toggle${activeCount > 0 ? ' fb-toggle--on' : ''}`}
+          style={{ padding: '5px 10px', fontSize: '12px', gap: '6px' }}
+          onClick={() => setFiltersOpen(o => !o)}
+          title={filtersOpen ? 'Ocultar filtros' : 'Mostrar filtros'}
+        >
+          <FilterIcon />
+          Filtros
+          {activeCount > 0 && <span className="fb-count">{activeCount}</span>}
+        </button>
         {alerts.length > 0 && (
           <button
             className="btn btn-ghost"
@@ -121,6 +136,7 @@ export default function AlertFeed({ alerts, freshId, onAcknowledge }: AlertFeedP
         </div>
       </div>
 
+      <div className={`filterbar-collapse${filtersOpen ? ' is-open' : ''}`}>
       <div className="filterbar">
         <FilterSegment label="Tipo"      options={TYPE_OPTS} value={filterTipo} onChange={setFilterTipo} />
         <FilterSegment label="Severidad" options={SEV_OPTS}  value={filterSev}  onChange={setFilterSev}  />
@@ -153,6 +169,7 @@ export default function AlertFeed({ alerts, freshId, onAcknowledge }: AlertFeedP
         >
           ✕ Limpiar
         </button>
+      </div>
       </div>
 
       <div className="table-wrapper">
