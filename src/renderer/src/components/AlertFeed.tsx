@@ -29,10 +29,13 @@ function SevBadge({ sev }: { sev: Severidad }) {
 
 interface AlertFeedProps {
   alerts: Alert[]
-  freshId: string | null
+  freshId: string | number | null
+  onAcknowledge?: (id: string | number) => Promise<void>
 }
 
-export default function AlertFeed({ alerts, freshId }: AlertFeedProps) {
+export default function AlertFeed({ alerts, freshId, onAcknowledge }: AlertFeedProps) {
+  const colSpan = onAcknowledge ? 7 : 6
+
   return (
     <div className="panel alert-feed">
       <div className="panel-head">
@@ -70,22 +73,40 @@ export default function AlertFeed({ alerts, freshId }: AlertFeedProps) {
               <th style={{ width: '150px' }}>IP origen</th>
               <th style={{ width: '100px' }}>Severidad</th>
               <th style={{ width: '90px', textAlign: 'right' }}>Duración</th>
+              {onAcknowledge && <th style={{ width: '50px' }} />}
             </tr>
           </thead>
           <tbody>
             {alerts.map(alert => (
-              <tr key={alert.id} className={alert.id === freshId ? 'row-fresh' : ''}>
+              <tr
+                key={alert.id}
+                className={[
+                  alert.id === freshId ? 'row-fresh' : '',
+                  alert.acknowledged ? 'row-ack' : ''
+                ].filter(Boolean).join(' ')}
+              >
                 <td className="cell-ts">{alert.timestamp}</td>
                 <td><TypeBadge tipo={alert.tipo} /></td>
                 <td className="cell-rule">{alert.regla}</td>
                 <td className="cell-ip">{alert.ip}</td>
                 <td><SevBadge sev={alert.severidad} /></td>
                 <td className="cell-dur">{alert.duracion ? `${alert.duracion}s` : '—'}</td>
+                {onAcknowledge && (
+                  <td style={{ textAlign: 'center' }}>
+                    {!alert.acknowledged && (
+                      <button
+                        className="btn-ack"
+                        title="Marcar como revisado"
+                        onClick={() => onAcknowledge(alert.id)}
+                      >✓</button>
+                    )}
+                  </td>
+                )}
               </tr>
             ))}
             {alerts.length === 0 && (
               <tr>
-                <td colSpan={6} style={{ textAlign: 'center', padding: '40px', color: 'var(--text-faint)', fontStyle: 'italic' }}>
+                <td colSpan={colSpan} style={{ textAlign: 'center', padding: '40px', color: 'var(--text-faint)', fontStyle: 'italic' }}>
                   Esperando eventos...
                 </td>
               </tr>

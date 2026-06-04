@@ -280,6 +280,21 @@ body {
   100% { background: transparent; }
 }
 .alert-table tbody tr.row-fresh { animation: row-in 0.6s ease; }
+.alert-table tbody tr.row-ack { opacity: 0.45; }
+
+.btn-ack {
+  background: none;
+  border: 1px solid rgba(0,212,255,0.3);
+  color: var(--accent);
+  border-radius: 4px;
+  width: 22px; height: 22px;
+  font-size: 12px;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0;
+  transition: background 0.15s, border-color 0.15s;
+}
+.btn-ack:hover { background: rgba(0,212,255,0.12); border-color: var(--accent); }
 
 .cell-ts   { font-family: var(--mono); color: var(--text-dim); font-size: 12px; }
 .cell-rule { color: var(--text); }

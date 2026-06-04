@@ -2,7 +2,7 @@ export type Severidad = 'BAJA' | 'MEDIA' | 'ALTA' | 'CRITICA'
 export type TipoAlerta = 'BLOQUEO' | 'ALERTA' | 'REGISTRO'
 
 export interface Alert {
-  id: string
+  id: string | number
   timestamp: string
   tipo: TipoAlerta
   regla: string
@@ -10,6 +10,7 @@ export interface Alert {
   severidad: Severidad
   duracion?: number
   raw: string
+  acknowledged?: boolean
 }
 
 export interface BlockedIP {

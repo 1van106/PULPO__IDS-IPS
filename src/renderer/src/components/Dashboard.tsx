@@ -14,10 +14,13 @@ interface DashboardProps {
   stats: AppStats
   openFile: () => void
   clearHistory: () => void
+  acknowledgeAlert: (id: string | number) => Promise<void>
+  isApiMode: boolean
 }
 
 export default function Dashboard({
-  alerts, logPath, isMonitoring, blockedIPs, stats, openFile, clearHistory
+  alerts, logPath, isMonitoring, blockedIPs, stats,
+  openFile, clearHistory, acknowledgeAlert, isApiMode
 }: DashboardProps) {
   const freshId = alerts.length > 0 ? alerts[0].id : null
 
@@ -35,7 +38,11 @@ export default function Dashboard({
         <Stats stats={stats} />
         <Charts alerts={alerts} />
         <div className="dashboard-main">
-          <AlertFeed alerts={alerts} freshId={freshId} />
+          <AlertFeed
+            alerts={alerts}
+            freshId={freshId}
+            onAcknowledge={isApiMode ? acknowledgeAlert : undefined}
+          />
           <BlockedIPs ips={blockedIPs} />
         </div>
       </div>
