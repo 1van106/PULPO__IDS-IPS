@@ -340,11 +340,11 @@ body {
   transition: opacity 0.13s, box-shadow 0.13s;
 }
 .seg-btn[aria-pressed="true"] {
-  color: #061016;
+  color: #ffffff;
   background: var(--c, var(--accent));
   box-shadow: 0 0 0 1px var(--c, var(--accent)), 0 0 12px -1px var(--c, var(--accent));
 }
-.seg-btn[aria-pressed="true"] .mk { background: #061016; opacity: 0.9; }
+.seg-btn[aria-pressed="true"] .mk { background: #ffffff; opacity: 0.9; }
 .seg-btn.is-all   { --c: var(--accent); }
 .seg-btn.t-bloqueo, .seg-btn.s-critica { --c: var(--red); }
 .seg-btn.t-alerta,  .seg-btn.s-media   { --c: var(--blue); }
