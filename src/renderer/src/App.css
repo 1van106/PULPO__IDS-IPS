@@ -301,15 +301,11 @@ body {
 .cell-ip   { font-family: var(--mono); color: var(--purple); }
 .cell-dur  { font-family: var(--mono); color: var(--text-faint); font-size: 12px; text-align: right; }
 
-/* ── Filter bar collapse ───────────────────────────────── */
-.filterbar-collapse {
-  display: grid;
-  grid-template-rows: 0fr;
-  transition: grid-template-rows 0.22s ease;
-  overflow: hidden;
+/* ── Filter bar open animation ─────────────────────────── */
+@keyframes fb-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
-.filterbar-collapse.is-open { grid-template-rows: 1fr; }
-.filterbar-collapse > .filterbar { min-height: 0; }
 
 .fb-toggle--on { color: var(--accent); border-color: rgba(0,212,255,0.3); }
 .fb-toggle--on:hover { background: rgba(0,212,255,0.07) !important; }
@@ -323,6 +319,7 @@ body {
 
 /* ── Filter bar ────────────────────────────────────────── */
 .filterbar {
+  animation: fb-in 0.18s ease;
   display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
   padding: 11px 18px;
   background: linear-gradient(180deg, rgba(0,212,255,0.03), transparent), #010409;

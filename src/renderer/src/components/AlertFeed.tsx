@@ -136,41 +136,41 @@ export default function AlertFeed({ alerts, freshId, onAcknowledge }: AlertFeedP
         </div>
       </div>
 
-      <div className={`filterbar-collapse${filtersOpen ? ' is-open' : ''}`}>
-      <div className="filterbar">
-        <FilterSegment label="Tipo"      options={TYPE_OPTS} value={filterTipo} onChange={setFilterTipo} />
-        <FilterSegment label="Severidad" options={SEV_OPTS}  value={filterSev}  onChange={setFilterSev}  />
-        <div className="filter-field">
-          <span className="field-label">Buscar</span>
-          <div className="fb-search-wrap">
-            <input
-              type="text"
-              className="fb-search"
-              placeholder="regla o IP…"
-              value={query}
-              onChange={e => setQuery(e.target.value)}
-              spellCheck={false}
-              autoComplete="off"
-            />
-            {query && (
-              <button type="button" className="fb-search-x" onClick={() => setQuery('')}>✕</button>
-            )}
+      {filtersOpen && (
+        <div className="filterbar">
+          <FilterSegment label="Tipo"      options={TYPE_OPTS} value={filterTipo} onChange={setFilterTipo} />
+          <FilterSegment label="Severidad" options={SEV_OPTS}  value={filterSev}  onChange={setFilterSev}  />
+          <div className="filter-field">
+            <span className="field-label">Buscar</span>
+            <div className="fb-search-wrap">
+              <input
+                type="text"
+                className="fb-search"
+                placeholder="regla o IP…"
+                value={query}
+                onChange={e => setQuery(e.target.value)}
+                spellCheck={false}
+                autoComplete="off"
+              />
+              {query && (
+                <button type="button" className="fb-search-x" onClick={() => setQuery('')}>✕</button>
+              )}
+            </div>
           </div>
+          <div className="fb-spacer" />
+          <span className="fb-result">
+            <b>{visible.length}</b> / {alerts.length} eventos
+          </span>
+          <button
+            type="button"
+            className="fb-clear"
+            disabled={!active}
+            onClick={() => { setFilterTipo('ALL'); setFilterSev('ALL'); setQuery('') }}
+          >
+            ✕ Limpiar
+          </button>
         </div>
-        <div className="fb-spacer" />
-        <span className="fb-result">
-          <b>{visible.length}</b> / {alerts.length} eventos
-        </span>
-        <button
-          type="button"
-          className="fb-clear"
-          disabled={!active}
-          onClick={() => { setFilterTipo('ALL'); setFilterSev('ALL'); setQuery('') }}
-        >
-          ✕ Limpiar
-        </button>
-      </div>
-      </div>
+      )}
 
       <div className="table-wrapper">
         <table className="alert-table">
