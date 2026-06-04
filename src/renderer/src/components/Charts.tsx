@@ -1,8 +1,18 @@
+import { useState, useEffect } from 'react'
 import {
   AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell
 } from 'recharts'
 import { Alert, Severidad } from '../types'
+
+const API_URL = 'http://localhost:8080'
+
+interface ApiStats {
+  total: number
+  by_rule: Record<string, number>
+  by_severity: Record<string, number>
+  by_type: Record<string, number>
+}
 
 // ── Severity config ────────────────────────────────────────
 const SEV: Record<Severidad, { color: string; label: string }> = {
@@ -32,7 +42,7 @@ function buildTimeline(alerts: Alert[], windowMin = 30) {
   return Array.from(buckets.entries()).map(([time, count]) => ({ time, count }))
 }
 
-function buildSeverity(alerts: Alert[]) {
+function buildSeverityFromAlerts(alerts: Alert[]) {
   const counts: Record<Severidad, number> = { CRITICA: 0, ALTA: 0, MEDIA: 0, BAJA: 0 }
   alerts.forEach(a => { counts[a.severidad] = (counts[a.severidad] ?? 0) + 1 })
   return (Object.keys(SEV) as Severidad[])
@@ -40,12 +50,22 @@ function buildSeverity(alerts: Alert[]) {
     .map(k => ({ name: SEV[k].label, value: counts[k], color: SEV[k].color }))
 }
 
-function buildTopRules(alerts: Alert[], n = 6) {
+function buildSeverityFromApi(by_severity: Record<string, number>) {
+  return (Object.keys(SEV) as Severidad[])
+    .filter(k => (by_severity[k] ?? 0) > 0)
+    .map(k => ({ name: SEV[k].label, value: by_severity[k] ?? 0, color: SEV[k].color }))
+}
+
+function buildTopRulesFromAlerts(alerts: Alert[], n = 6) {
   const counts = new Map<string, number>()
   alerts.forEach(a => counts.set(a.regla, (counts.get(a.regla) ?? 0) + 1))
-  const sorted = Array.from(counts.entries())
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, n)
+  const sorted = Array.from(counts.entries()).sort((a, b) => b[1] - a[1]).slice(0, n)
+  const max = sorted[0]?.[1] ?? 1
+  return sorted.map(([rule, count]) => ({ rule, count, pct: Math.round((count / max) * 100) }))
+}
+
+function buildTopRulesFromApi(by_rule: Record<string, number>, n = 6) {
+  const sorted = Object.entries(by_rule).sort((a, b) => b[1] - a[1]).slice(0, n)
   const max = sorted[0]?.[1] ?? 1
   return sorted.map(([rule, count]) => ({ rule, count, pct: Math.round((count / max) * 100) }))
 }
@@ -117,9 +137,11 @@ function Timeline({ alerts }: { alerts: Alert[] }) {
   )
 }
 
-function SeverityDonut({ alerts }: { alerts: Alert[] }) {
-  const data = buildSeverity(alerts)
-  const total = data.reduce((s, d) => s + d.value, 0)
+function SeverityDonut({ alerts, apiStats }: { alerts: Alert[], apiStats: ApiStats | null }) {
+  const data = apiStats
+    ? buildSeverityFromApi(apiStats.by_severity)
+    : buildSeverityFromAlerts(alerts)
+  const total = apiStats ? apiStats.total : data.reduce((s, d) => s + d.value, 0)
   return (
     <div className="chart-panel">
       <div className="chart-panel-head">
@@ -168,8 +190,10 @@ function SeverityDonut({ alerts }: { alerts: Alert[] }) {
   )
 }
 
-function TopRules({ alerts }: { alerts: Alert[] }) {
-  const data = buildTopRules(alerts)
+function TopRules({ alerts, apiStats }: { alerts: Alert[], apiStats: ApiStats | null }) {
+  const data = apiStats
+    ? buildTopRulesFromApi(apiStats.by_rule)
+    : buildTopRulesFromAlerts(alerts)
   return (
     <div className="chart-panel">
       <div className="chart-panel-head">
@@ -198,13 +222,26 @@ function TopRules({ alerts }: { alerts: Alert[] }) {
 interface ChartsProps { alerts: Alert[] }
 
 export default function Charts({ alerts }: ChartsProps) {
+  const [apiStats, setApiStats] = useState<ApiStats | null>(null)
+
+  useEffect(() => {
+    const load = () =>
+      fetch(`${API_URL}/api/stats`)
+        .then(r => r.json())
+        .then(setApiStats)
+        .catch(() => {})
+    load()
+    const id = setInterval(load, 30000)
+    return () => clearInterval(id)
+  }, [])
+
   return (
     <section>
       <SectionHead title="Análisis" />
       <div className="charts-row">
         <Timeline alerts={alerts} />
-        <SeverityDonut alerts={alerts} />
-        <TopRules alerts={alerts} />
+        <SeverityDonut alerts={alerts} apiStats={apiStats} />
+        <TopRules     alerts={alerts} apiStats={apiStats} />
       </div>
     </section>
   )
