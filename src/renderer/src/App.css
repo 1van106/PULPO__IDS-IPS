@@ -306,9 +306,10 @@ body {
   display: grid;
   grid-template-rows: 0fr;
   transition: grid-template-rows 0.22s ease;
+  overflow: hidden;
 }
 .filterbar-collapse.is-open { grid-template-rows: 1fr; }
-.filterbar-collapse > .filterbar { min-height: 0; overflow: hidden; }
+.filterbar-collapse > .filterbar { min-height: 0; }
 
 .fb-toggle--on { color: var(--accent); border-color: rgba(0,212,255,0.3); }
 .fb-toggle--on:hover { background: rgba(0,212,255,0.07) !important; }
