@@ -153,10 +153,10 @@ function SeverityDonut({ alerts, apiStats }: { alerts: Alert[], apiStats: ApiSta
         ) : (
           <>
             <div className="donut-wrap">
-              <ResponsiveContainer width={130} height={130}>
+              <ResponsiveContainer width={104} height={104}>
                 <PieChart>
                   <Pie
-                    data={data} innerRadius={38} outerRadius={58}
+                    data={data} innerRadius={28} outerRadius={44}
                     paddingAngle={3} dataKey="value" startAngle={90} endAngle={-270}
                   >
                     {data.map((entry, i) => (

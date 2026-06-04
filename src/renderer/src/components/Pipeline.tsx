@@ -37,7 +37,6 @@ export default function Pipeline({ lastAlert }: PipelineProps) {
                 <span className="stage-num">{stage.num}</span>
                 <span className="stage-label">{stage.label}</span>
               </div>
-              <div className="stage-desc">{stage.desc}</div>
             </div>
             {i < STAGES.length - 1 && (
               <div className="pipeline-arrow"><ArrowIcon /></div>
