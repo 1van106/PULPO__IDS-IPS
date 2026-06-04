@@ -28,14 +28,48 @@ function SevBadge({ sev }: { sev: Severidad }) {
   return <span className={`badge ${map[sev]}`}>{sev}</span>
 }
 
-const TIPOS: TipoAlerta[] = ['BLOQUEO', 'ALERTA']
-const SEVS: Severidad[]   = ['CRITICA', 'ALTA', 'MEDIA', 'BAJA']
+type FilterVal = string
 
-const TIPO_CLS: Record<TipoAlerta, string> = {
-  BLOQUEO: 'b-bloqueo', ALERTA: 'b-alerta', REGISTRO: 'b-baja'
-}
-const SEV_CLS: Record<Severidad, string> = {
-  CRITICA: 'b-critica', ALTA: 'b-alta', MEDIA: 'b-media', BAJA: 'b-baja'
+interface SegOpt { value: FilterVal; label: string; cls: string }
+
+const TYPE_OPTS: SegOpt[] = [
+  { value: 'ALL',     label: 'TODOS',   cls: 'is-all'    },
+  { value: 'BLOQUEO', label: 'BLOQUEO', cls: 't-bloqueo' },
+  { value: 'ALERTA',  label: 'ALERTA',  cls: 't-alerta'  },
+]
+const SEV_OPTS: SegOpt[] = [
+  { value: 'ALL',     label: 'TODAS',   cls: 'is-all'    },
+  { value: 'CRITICA', label: 'CRÍTICA', cls: 's-critica' },
+  { value: 'ALTA',    label: 'ALTA',    cls: 's-alta'    },
+  { value: 'MEDIA',   label: 'MEDIA',   cls: 's-media'   },
+  { value: 'BAJA',    label: 'BAJA',    cls: 's-baja'    },
+]
+
+function FilterSegment({ label, options, value, onChange }: {
+  label: string
+  options: SegOpt[]
+  value: FilterVal
+  onChange: (v: FilterVal) => void
+}) {
+  return (
+    <div className="filter-field">
+      <span className="field-label">{label}</span>
+      <div className="segment" role="group" aria-label={label}>
+        {options.map(o => (
+          <button
+            key={o.value}
+            type="button"
+            className={`seg-btn ${o.cls}`}
+            aria-pressed={value === o.value}
+            onClick={() => onChange(o.value)}
+          >
+            {o.value !== 'ALL' && <span className="mk" />}
+            {o.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  )
 }
 
 interface AlertFeedProps {
@@ -45,12 +79,14 @@ interface AlertFeedProps {
 }
 
 export default function AlertFeed({ alerts, freshId, onAcknowledge }: AlertFeedProps) {
-  const [filterTipo, setFilterTipo] = useState<TipoAlerta | null>(null)
-  const [filterSev,  setFilterSev]  = useState<Severidad   | null>(null)
+  const [filterTipo, setFilterTipo] = useState<FilterVal>('ALL')
+  const [filterSev,  setFilterSev]  = useState<FilterVal>('ALL')
+
+  const active = filterTipo !== 'ALL' || filterSev !== 'ALL'
 
   const visible = alerts
-    .filter(a => !filterTipo || a.tipo      === filterTipo)
-    .filter(a => !filterSev  || a.severidad === filterSev)
+    .filter(a => filterTipo === 'ALL' || a.tipo      === filterTipo)
+    .filter(a => filterSev  === 'ALL' || a.severidad === filterSev)
 
   const colSpan = onAcknowledge ? 7 : 6
 
@@ -58,9 +94,7 @@ export default function AlertFeed({ alerts, freshId, onAcknowledge }: AlertFeedP
     <div className="panel alert-feed">
       <div className="panel-head">
         <h3>Eventos en tiempo real</h3>
-        <span className="panel-count">
-          {visible.length !== alerts.length ? `${visible.length} / ${alerts.length}` : alerts.length}
-        </span>
+        <span className="panel-count">{visible.length}</span>
         <div className="panel-spacer" />
         {alerts.length > 0 && (
           <button
@@ -84,39 +118,21 @@ export default function AlertFeed({ alerts, freshId, onAcknowledge }: AlertFeedP
         </div>
       </div>
 
-      {/* Filter bar */}
-      <div className="filter-bar">
-        <div className="filter-group">
-          <span className="filter-label">Tipo</span>
-          <span
-            className={`filter-chip chip-all ${filterTipo === null ? 'active' : ''}`}
-            onClick={() => setFilterTipo(null)}
-          >Todos</span>
-          {TIPOS.map(t => (
-            <span
-              key={t}
-              className={`filter-chip ${TIPO_CLS[t]} ${filterTipo === t ? 'active' : ''}`}
-              onClick={() => setFilterTipo(prev => prev === t ? null : t)}
-            ><span className="dot" />{t}</span>
-          ))}
-        </div>
-
-        <div className="filter-divider" />
-
-        <div className="filter-group">
-          <span className="filter-label">Severidad</span>
-          <span
-            className={`filter-chip chip-all ${filterSev === null ? 'active' : ''}`}
-            onClick={() => setFilterSev(null)}
-          >Todas</span>
-          {SEVS.map(s => (
-            <span
-              key={s}
-              className={`filter-chip ${SEV_CLS[s]} ${filterSev === s ? 'active' : ''}`}
-              onClick={() => setFilterSev(prev => prev === s ? null : s)}
-            >{s}</span>
-          ))}
-        </div>
+      <div className="filterbar">
+        <FilterSegment label="Tipo"      options={TYPE_OPTS} value={filterTipo} onChange={setFilterTipo} />
+        <FilterSegment label="Severidad" options={SEV_OPTS}  value={filterSev}  onChange={setFilterSev}  />
+        <div className="fb-spacer" />
+        <span className="fb-result">
+          <b>{visible.length}</b> / {alerts.length} eventos
+        </span>
+        <button
+          type="button"
+          className="fb-clear"
+          disabled={!active}
+          onClick={() => { setFilterTipo('ALL'); setFilterSev('ALL') }}
+        >
+          ✕ Limpiar
+        </button>
       </div>
 
       <div className="table-wrapper">
@@ -163,7 +179,7 @@ export default function AlertFeed({ alerts, freshId, onAcknowledge }: AlertFeedP
             {visible.length === 0 && (
               <tr>
                 <td colSpan={colSpan} style={{ textAlign: 'center', padding: '40px', color: 'var(--text-faint)', fontStyle: 'italic' }}>
-                  {alerts.length === 0 ? 'Esperando eventos...' : 'Sin resultados para este filtro'}
+                  {alerts.length === 0 ? 'Esperando eventos...' : 'Sin eventos que coincidan con el filtro'}
                 </td>
               </tr>
             )}
