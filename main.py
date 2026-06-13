@@ -12,6 +12,7 @@ Fecha: Febrero 2026
 import os
 import sys
 import time
+import socket
 import logging
 import signal
 import argparse
@@ -58,8 +59,27 @@ class LogClassifier:
         configurar_logging(nivel)
         self.logger = logging.getLogger("logclassifier.main")
 
+        # Resolver hostname de este nodo
+        hostname_cfg = self.config.get("general", {}).get("hostname", "auto")
+        self.hostname = socket.gethostname() if hostname_cfg == "auto" else hostname_cfg
+
+        # Modo agente: forwarder hacia el colector central (opcional)
+        self.forwarder = None
+        collector_cfg = self.config.get("collector", {})
+        if collector_cfg.get("enabled", False):
+            from modules.forwarder import Forwarder
+            self.forwarder = Forwarder(collector_cfg)
+            self.forwarder.iniciar()
+            self.logger.info(
+                f"Modo AGENTE → reenviando alertas a {collector_cfg.get('url')} (host={self.hostname})"
+            )
+
         # Instanciar módulos
-        self.alertas = ModuloAlertas(self.config.get("alertas", {}))
+        self.alertas = ModuloAlertas(
+            self.config.get("alertas", {}),
+            hostname=self.hostname,
+            forwarder=self.forwarder,
+        )
 
         self.correlacion = MotorCorrelacion(
             config=self.config.get("correlacion", {}),
@@ -85,6 +105,10 @@ class LogClassifier:
         api_cfg = self.config.get("api", {})
         if api_cfg.get("enabled", True):
             import threading
+            # El token de la API se lee desde el entorno en api.py
+            token = api_cfg.get("token", "")
+            if token and not os.environ.get("PULPO_API_TOKEN"):
+                os.environ["PULPO_API_TOKEN"] = token
             from api import run_server
             host = api_cfg.get("host", "0.0.0.0")
             port = api_cfg.get("port", 8080)

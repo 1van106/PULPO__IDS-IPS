@@ -28,12 +28,16 @@ COLORES = {
 
 class ModuloAlertas:
 
-    def __init__(self, config: dict):
+    def __init__(self, config: dict, hostname: str = "local", forwarder=None):
         """
-        config: sección 'alertas' del config.yaml
+        config:    sección 'alertas' del config.yaml
+        hostname:  nombre de este host (se etiqueta en cada alerta)
+        forwarder: Forwarder opcional para reenviar al colector central
         """
         self.log_file = config.get("log_file", "logs/alertas.log")
         self.consola = config.get("consola", True)
+        self.hostname = hostname
+        self.forwarder = forwarder
         self._asegurar_directorio()
         init_db()
 
@@ -62,12 +66,15 @@ class ModuloAlertas:
         if parsed:
             try:
                 db = SessionLocal()
-                record = AlertRecord(**parsed, raw=mensaje)
+                record = AlertRecord(**parsed, raw=mensaje, host=self.hostname)
                 db.add(record)
                 db.commit()
                 db.refresh(record)
-                alert_queue.put(alert_to_dict(record))
+                payload = alert_to_dict(record)
                 db.close()
+                alert_queue.put(payload)
+                if self.forwarder:
+                    self.forwarder.enqueue(payload)
             except Exception as e:
                 logger.error(f"[Alertas] Error guardando en BD: {e}")
 
