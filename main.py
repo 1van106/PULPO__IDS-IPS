@@ -82,12 +82,21 @@ class LogClassifier:
             self.enricher = Enriquecedor(enriquecimiento_cfg)
             self.logger.info("Enriquecimiento (threat intel) activado.")
 
+        # Notificaciones a canales externos (opcional)
+        self.notificador = None
+        notificaciones_cfg = self.config.get("notificaciones", {})
+        if notificaciones_cfg.get("enabled", False):
+            from modules.notificaciones import Notificador
+            self.notificador = Notificador(notificaciones_cfg)
+            self.notificador.iniciar()
+
         # Instanciar módulos
         self.alertas = ModuloAlertas(
             self.config.get("alertas", {}),
             hostname=self.hostname,
             forwarder=self.forwarder,
             enricher=self.enricher,
+            notificador=self.notificador,
         )
 
         self.correlacion = MotorCorrelacion(

@@ -28,18 +28,21 @@ COLORES = {
 
 class ModuloAlertas:
 
-    def __init__(self, config: dict, hostname: str = "local", forwarder=None, enricher=None):
+    def __init__(self, config: dict, hostname: str = "local", forwarder=None,
+                 enricher=None, notificador=None):
         """
-        config:    sección 'alertas' del config.yaml
-        hostname:  nombre de este host (se etiqueta en cada alerta)
-        forwarder: Forwarder opcional para reenviar al colector central
-        enricher:  Enriquecedor opcional (threat intel) para anotar la IP
+        config:      sección 'alertas' del config.yaml
+        hostname:    nombre de este host (se etiqueta en cada alerta)
+        forwarder:   Forwarder opcional para reenviar al colector central
+        enricher:    Enriquecedor opcional (threat intel) para anotar la IP
+        notificador: Notificador opcional (Slack/Telegram/email) por umbral
         """
         self.log_file = config.get("log_file", "logs/alertas.log")
         self.consola = config.get("consola", True)
         self.hostname = hostname
         self.forwarder = forwarder
         self.enricher = enricher
+        self.notificador = notificador
         self._asegurar_directorio()
         init_db()
 
@@ -85,6 +88,8 @@ class ModuloAlertas:
                 alert_queue.put(payload)
                 if self.forwarder:
                     self.forwarder.enqueue(payload)
+                if self.notificador:
+                    self.notificador.notificar(payload)
             except Exception as e:
                 logger.error(f"[Alertas] Error guardando en BD: {e}")
 

@@ -79,3 +79,25 @@ enriquecimiento:
   incluir_privadas: false          # true solo para pruebas en lab (IPs 192.168.x)
   cache_ttl_segundos: 3600         # cachear resultados por IP (rate limits)
   timeout: 3
+
+# ── Notificaciones ──────────────────────────────────────────────────
+# Avisa por Slack/Telegram/email cuando una alerta alcanza el umbral de
+# severidad. Secretos: déjalos vacíos y usa variables de entorno
+# (SLACK_WEBHOOK_URL, TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID, SMTP_PASSWORD).
+notificaciones:
+  enabled: false
+  umbral_severidad: "ALTA"         # BAJA | MEDIA | ALTA | CRITICA
+  timeout: 5
+  slack:
+    webhook_url: ""                # o variable SLACK_WEBHOOK_URL
+  telegram:
+    bot_token: ""                  # o variable TELEGRAM_BOT_TOKEN
+    chat_id: ""                    # o variable TELEGRAM_CHAT_ID
+  email:
+    smtp_host: ""                  # ej. smtp.gmail.com (vacío = email off)
+    smtp_port: 587
+    tls: true
+    usuario: ""
+    password: ""                   # o variable SMTP_PASSWORD
+    desde: ""
+    para: ""
