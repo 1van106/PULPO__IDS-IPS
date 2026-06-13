@@ -60,6 +60,12 @@ _ws_clients: List[WebSocket] = []
 @app.on_event("startup")
 async def on_startup() -> None:
     init_db()
+    if not _api_token():
+        logger.warning(
+            "[API] Sin token configurado: los endpoints de escritura "
+            "(/api/ingest, acknowledge, DELETE) están ABIERTOS. "
+            "Define 'api.token' en config.yaml para exigir autenticación."
+        )
     asyncio.create_task(_ws_broadcaster())
 
 

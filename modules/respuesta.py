@@ -13,6 +13,7 @@ Modos de operación:
 import subprocess
 import threading
 import time
+import ipaddress
 import logging
 from datetime import datetime
 from typing import Callable
@@ -33,7 +34,13 @@ class ModuloRespuesta:
         self.habilitado = config.get("enabled", True)
         self.modo = config.get("modo", "simulacion")
         self.duracion_bloqueo = config.get("bloqueo_duracion_segundos", 300)
-        self.whitelist = set(config.get("whitelist_ips", []))
+        # Whitelist: admite IPs sueltas y rangos CIDR (ej. "192.168.0.0/16").
+        self.whitelist_nets = []
+        for entrada in config.get("whitelist_ips", []):
+            try:
+                self.whitelist_nets.append(ipaddress.ip_network(entrada, strict=False))
+            except ValueError:
+                logger.warning(f"[Respuesta] Entrada de whitelist inválida, ignorada: {entrada}")
         self.callback_alerta = callback_alerta
         self.callback_resetear_ip = callback_resetear_ip
 
@@ -62,12 +69,20 @@ class ModuloRespuesta:
     # Acciones
     # ------------------------------------------------------------------
 
+    def _en_whitelist(self, ip: str) -> bool:
+        """True si la IP está en alguna red/IP de la whitelist (soporta CIDR)."""
+        try:
+            addr = ipaddress.ip_address(ip)
+        except ValueError:
+            return False
+        return any(addr in net for net in self.whitelist_nets)
+
     def _accion_bloquear_ip(self, evento: Evento, ip: str):
         if ip is None:
             logger.warning("[Respuesta] bloquear_ip sin IP en el evento.")
             return
 
-        if ip in self.whitelist:
+        if self._en_whitelist(ip):
             logger.info(f"[Respuesta] IP {ip} en whitelist. No se bloquea.")
             return
 
@@ -125,7 +140,14 @@ class ModuloRespuesta:
             )
             logger.info(f"[Respuesta] iptables: IP {ip} bloqueada correctamente.")
         except subprocess.CalledProcessError as e:
-            logger.error(f"[Respuesta] Error ejecutando iptables: {e.stderr.decode()}")
+            stderr = e.stderr.decode(errors="replace") if e.stderr else ""
+            if "permission denied" in stderr.lower() or "must be root" in stderr.lower():
+                logger.error(
+                    "[Respuesta] iptables denegó el bloqueo por permisos: el IDS debe "
+                    "ejecutarse como root (o con CAP_NET_ADMIN) en modo 'real'."
+                )
+            else:
+                logger.error(f"[Respuesta] Error ejecutando iptables: {stderr}")
         except FileNotFoundError:
             logger.error("[Respuesta] iptables no encontrado en el sistema.")
 

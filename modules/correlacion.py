@@ -36,6 +36,11 @@ class MotorCorrelacion:
         self._contadores: dict = defaultdict(list)
         self._lock = threading.Lock()
 
+        # Ventana máxima observada entre todas las reglas procesadas.
+        # La limpieza periódica usa este horizonte para no podar eventos
+        # que todavía caen dentro de la ventana de alguna regla.
+        self._max_ventana = 0
+
         # IPs ya bloqueadas/alertadas para evitar disparos repetitivos
         # Se limpia automáticamente junto con los contadores viejos
         self._disparadas: set = set()
@@ -61,6 +66,8 @@ class MotorCorrelacion:
 
             # Filtrar solo los timestamps dentro de la ventana
             ventana = evento.ventana_segundos
+            if ventana > self._max_ventana:
+                self._max_ventana = ventana
             recientes = [t for t in self._contadores[clave] if ahora - t <= ventana]
             self._contadores[clave] = recientes
 
@@ -89,10 +96,12 @@ class MotorCorrelacion:
             time.sleep(self.cleanup_interval)
             ahora = time.time()
             with self._lock:
+                # Horizonte = ventana máxima de cualquier regla vista (mín. 300s
+                # por seguridad si aún no se ha procesado ningún evento).
+                horizonte = max(self._max_ventana, 300)
                 claves_a_eliminar = []
                 for clave, timestamps in self._contadores.items():
-                    # Obtener la ventana máxima (usamos 300s como límite seguro)
-                    recientes = [t for t in timestamps if ahora - t <= 300]
+                    recientes = [t for t in timestamps if ahora - t <= horizonte]
                     if recientes:
                         self._contadores[clave] = recientes
                     else:

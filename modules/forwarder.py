@@ -13,6 +13,7 @@ como respaldo).
 import logging
 import queue
 import threading
+import time
 
 import requests
 
@@ -28,6 +29,9 @@ class Forwarder:
         self.url = config.get("url", "").rstrip("/")
         self.token = config.get("token", "")
         self.timeout = config.get("timeout", 3)
+        # Reintentos con backoff exponencial si el colector no responde.
+        self.reintentos = config.get("reintentos", 3)
+        self.backoff_base = config.get("backoff_base", 2)  # segundos
         self._queue: "queue.Queue[dict]" = queue.Queue()
         self._ejecutando = False
         self._thread: threading.Thread | None = None
@@ -46,6 +50,25 @@ class Forwarder:
         """Encola una alerta para reenviarla (no bloquea)."""
         self._queue.put(alert_dict)
 
+    def _intentar_envio(self, alert_dict: dict, headers: dict) -> bool:
+        """Un único intento de POST. Devuelve True si se entregó (2xx/3xx)."""
+        try:
+            resp = requests.post(
+                f"{self.url}/api/ingest",
+                json=alert_dict,
+                headers=headers,
+                timeout=self.timeout,
+            )
+            if resp.status_code >= 400:
+                logger.warning(
+                    f"[Forwarder] Colector respondió {resp.status_code}: {resp.text[:200]}"
+                )
+                return False
+            return True
+        except requests.RequestException as e:
+            logger.warning(f"[Forwarder] No se pudo reenviar al colector: {e}")
+            return False
+
     def _bucle(self):
         headers = {"Content-Type": "application/json"}
         if self.token:
@@ -55,19 +78,25 @@ class Forwarder:
             alert_dict = self._queue.get()
             if alert_dict is None:
                 break
-            try:
-                resp = requests.post(
-                    f"{self.url}/api/ingest",
-                    json=alert_dict,
-                    headers=headers,
-                    timeout=self.timeout,
-                )
-                if resp.status_code >= 400:
-                    logger.warning(
-                        f"[Forwarder] Colector respondió {resp.status_code}: {resp.text[:200]}"
+
+            entregado = False
+            for intento in range(1, self.reintentos + 1):
+                if self._intentar_envio(alert_dict, headers):
+                    entregado = True
+                    break
+                if intento < self.reintentos and self._ejecutando:
+                    # Backoff exponencial: base, base*2, base*4, ...
+                    espera = self.backoff_base * (2 ** (intento - 1))
+                    logger.debug(
+                        f"[Forwarder] Reintento {intento}/{self.reintentos} en {espera}s"
                     )
-            except requests.RequestException as e:
-                logger.warning(f"[Forwarder] No se pudo reenviar al colector: {e}")
+                    time.sleep(espera)
+
+            if not entregado:
+                logger.error(
+                    f"[Forwarder] Alerta descartada del reenvío tras {self.reintentos} "
+                    f"intentos. Queda guardada en la SQLite local como respaldo."
+                )
 
     def detener(self):
         self._ejecutando = False

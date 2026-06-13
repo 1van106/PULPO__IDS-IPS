@@ -16,6 +16,8 @@ collector:
   url: "http://192.168.56.1:8080"  # colector central (host del dashboard)
   token: "CHANGEME"                # debe coincidir con api.token del colector
   timeout: 3                       # segundos de espera por POST
+  reintentos: 3                    # nº de intentos si el colector no responde
+  backoff_base: 2                  # segundos base del backoff exponencial (2, 4, 8...)
 
 ingesta:
   sources:
