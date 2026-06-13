@@ -57,3 +57,11 @@ api:
   port: 8080
   token: ""                        # si se define, exige Authorization: Bearer <token>
                                    # en endpoints de escritura (/api/ingest, DELETE, acknowledge)
+
+# ── Retención de datos ──────────────────────────────────────────────
+# Purga periódica de alertas antiguas para no llenar la base de datos.
+# (Web: 90 días Pro / 7 días Community)
+retencion:
+  enabled: true
+  dias: 90                         # borra alertas con más de N días (0 = sin purga)
+  intervalo_horas: 24              # cada cuántas horas se ejecuta la purga

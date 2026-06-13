@@ -120,6 +120,14 @@ class LogClassifier:
             ).start()
             self.logger.info(f"API REST iniciada → http://{host}:{port}/docs")
 
+        # Retención de datos: purga periódica de alertas antiguas (opcional)
+        self.retencion = None
+        retencion_cfg = self.config.get("retencion", {})
+        if retencion_cfg.get("enabled", True):
+            from modules.retencion import Retencion
+            self.retencion = Retencion(retencion_cfg)
+            self.retencion.iniciar()
+
     # ------------------------------------------------------------------
     # Ciclo de vida
     # ------------------------------------------------------------------

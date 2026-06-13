@@ -1,6 +1,6 @@
 import os
 import re
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Optional
 
 from sqlalchemy import Boolean, Column, DateTime, Integer, String, create_engine, inspect, text
@@ -48,6 +48,23 @@ def _migrate() -> None:
     if "host" not in columnas:
         with engine.begin() as conn:
             conn.execute(text("ALTER TABLE alerts ADD COLUMN host VARCHAR DEFAULT 'local'"))
+
+
+def purgar_antiguas(dias: int) -> int:
+    """
+    Borra las alertas con más de `dias` días de antigüedad (por created_at).
+    Devuelve el número de filas eliminadas. dias <= 0 desactiva la purga.
+    """
+    if dias <= 0:
+        return 0
+    corte = datetime.utcnow() - timedelta(days=dias)
+    db = SessionLocal()
+    try:
+        n = db.query(AlertRecord).filter(AlertRecord.created_at < corte).delete()
+        db.commit()
+        return n
+    finally:
+        db.close()
 
 
 def alert_to_dict(a: AlertRecord) -> dict:
