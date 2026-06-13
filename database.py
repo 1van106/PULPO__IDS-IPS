@@ -3,7 +3,7 @@ import re
 from datetime import datetime
 from typing import Optional
 
-from sqlalchemy import Boolean, Column, DateTime, Integer, String, create_engine
+from sqlalchemy import Boolean, Column, DateTime, Integer, String, create_engine, inspect, text
 from sqlalchemy.orm import declarative_base, sessionmaker
 
 DB_PATH = os.environ.get("PULPO_DB", "/opt/LogClassifier/pulpo.db")
@@ -15,6 +15,7 @@ class AlertRecord(Base):
     __tablename__ = "alerts"
 
     id           = Column(Integer, primary_key=True, autoincrement=True)
+    host         = Column(String,  nullable=False, default="local", index=True)
     timestamp    = Column(String,  nullable=False)
     tipo         = Column(String,  nullable=False)   # ALERTA | BLOQUEO | REGISTRO
     regla        = Column(String,  nullable=False)
@@ -35,11 +36,24 @@ SessionLocal = sessionmaker(bind=engine)
 
 def init_db() -> None:
     Base.metadata.create_all(engine)
+    _migrate()
+
+
+def _migrate() -> None:
+    """Micro-migración: añade columnas nuevas a tablas que ya existían."""
+    inspector = inspect(engine)
+    if "alerts" not in inspector.get_table_names():
+        return
+    columnas = {c["name"] for c in inspector.get_columns("alerts")}
+    if "host" not in columnas:
+        with engine.begin() as conn:
+            conn.execute(text("ALTER TABLE alerts ADD COLUMN host VARCHAR DEFAULT 'local'"))
 
 
 def alert_to_dict(a: AlertRecord) -> dict:
     return {
         "id":           a.id,
+        "host":         a.host,
         "timestamp":    a.timestamp,
         "tipo":         a.tipo,
         "regla":        a.regla,

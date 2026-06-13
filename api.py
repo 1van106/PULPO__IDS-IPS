@@ -6,16 +6,45 @@ Runs as a daemon thread alongside the main LogClassifier loop.
 import asyncio
 import json
 import logging
+import os
 from typing import List, Optional
 
 import uvicorn
-from fastapi import FastAPI, Query, WebSocket, WebSocketDisconnect
+from fastapi import Depends, FastAPI, Header, HTTPException, Query, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 
 from database import AlertRecord, SessionLocal, alert_to_dict, init_db
 from shared import alert_queue
 
 logger = logging.getLogger("logclassifier.api")
+
+
+def _api_token() -> str:
+    """Token exigido en endpoints de escritura. Vacío => sin auth (legacy)."""
+    return os.environ.get("PULPO_API_TOKEN", "")
+
+
+def require_token(authorization: Optional[str] = Header(None)) -> None:
+    """Dependencia FastAPI: valida 'Authorization: Bearer <token>' si hay token configurado."""
+    token = _api_token()
+    if not token:
+        return
+    expected = f"Bearer {token}"
+    if authorization != expected:
+        raise HTTPException(status_code=401, detail="Token inválido o ausente")
+
+
+class IngestAlert(BaseModel):
+    host:      str = "local"
+    timestamp: str
+    tipo:      str
+    regla:     str
+    ip:        str
+    severidad: str
+    duracion:  Optional[int] = None
+    raw:       str
+    acknowledged: Optional[bool] = False
 
 app = FastAPI(title="PULPO API", version="2.0.0", docs_url="/docs", redoc_url=None)
 app.add_middleware(
@@ -68,6 +97,7 @@ def list_alerts(
     severidad: Optional[str] = Query(None),
     tipo:      Optional[str] = Query(None),
     regla:     Optional[str] = Query(None),
+    host:      Optional[str] = Query(None),
 ) -> list:
     db = SessionLocal()
     q = db.query(AlertRecord).order_by(AlertRecord.id.desc())
@@ -77,9 +107,51 @@ def list_alerts(
         q = q.filter(AlertRecord.tipo == tipo.upper())
     if regla:
         q = q.filter(AlertRecord.regla == regla.upper())
+    if host:
+        q = q.filter(AlertRecord.host == host)
     result = q.offset(skip).limit(limit).all()
     db.close()
     return [alert_to_dict(a) for a in result]
+
+
+@app.post("/api/ingest")
+def ingest(alert: IngestAlert, _: None = Depends(require_token)) -> dict:
+    """Recibe una alerta reenviada por un agente, la persiste y la emite por WS."""
+    db = SessionLocal()
+    record = AlertRecord(
+        host=alert.host,
+        timestamp=alert.timestamp,
+        tipo=alert.tipo,
+        regla=alert.regla,
+        ip=alert.ip,
+        severidad=alert.severidad,
+        duracion=alert.duracion,
+        raw=alert.raw,
+        acknowledged=alert.acknowledged or False,
+    )
+    db.add(record)
+    db.commit()
+    db.refresh(record)
+    payload = alert_to_dict(record)
+    db.close()
+    alert_queue.put(payload)
+    return {"ok": True, "id": record.id}
+
+
+@app.get("/api/hosts")
+def list_hosts() -> list:
+    """Hosts distintos con su conteo de alertas y última vez vista (para el selector)."""
+    db = SessionLocal()
+    records = db.query(AlertRecord.host, AlertRecord.id, AlertRecord.timestamp).all()
+    db.close()
+    agg: dict = {}
+    for host, _id, ts in records:
+        h = host or "local"
+        info = agg.setdefault(h, {"host": h, "count": 0, "lastSeen": ""})
+        info["count"] += 1
+        if ts > info["lastSeen"]:
+            info["lastSeen"] = ts
+    return sorted(agg.values(), key=lambda i: i["count"], reverse=True)
 
 
 @app.get("/api/stats")
@@ -91,22 +163,25 @@ def get_stats() -> dict:
     by_rule: dict     = {}
     by_severity: dict = {}
     by_type: dict     = {}
+    by_host: dict     = {}
 
     for r in records:
         by_rule[r.regla]         = by_rule.get(r.regla, 0) + 1
         by_severity[r.severidad] = by_severity.get(r.severidad, 0) + 1
         by_type[r.tipo]          = by_type.get(r.tipo, 0) + 1
+        by_host[r.host or "local"] = by_host.get(r.host or "local", 0) + 1
 
     return {
         "total":       len(records),
         "by_rule":     by_rule,
         "by_severity": by_severity,
         "by_type":     by_type,
+        "by_host":     by_host,
     }
 
 
 @app.post("/api/alerts/{alert_id}/acknowledge")
-def acknowledge(alert_id: int) -> dict:
+def acknowledge(alert_id: int, _: None = Depends(require_token)) -> dict:
     db = SessionLocal()
     record = db.query(AlertRecord).filter(AlertRecord.id == alert_id).first()
     if record:
@@ -117,7 +192,7 @@ def acknowledge(alert_id: int) -> dict:
 
 
 @app.delete("/api/alerts")
-def clear_all() -> dict:
+def clear_all(_: None = Depends(require_token)) -> dict:
     db = SessionLocal()
     db.query(AlertRecord).delete()
     db.commit()
