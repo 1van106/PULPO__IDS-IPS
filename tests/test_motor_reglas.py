@@ -135,6 +135,12 @@ class TestMotorCorrelacion(unittest.TestCase):
             self.correlacion.procesar_evento(evento)
         self.assertEqual(len(self.disparos), 2)
 
+    def test_rastrea_ventana_maxima(self):
+        """Recuerda la ventana máxima vista para no podar eventos > 300s (fix)."""
+        evento = self._evento_de_prueba(ip="3.3.3.3", umbral=10, ventana=600)
+        self.correlacion.procesar_evento(evento)
+        self.assertGreaterEqual(self.correlacion._max_ventana, 600)
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
