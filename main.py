@@ -74,11 +74,20 @@ class LogClassifier:
                 f"Modo AGENTE → reenviando alertas a {collector_cfg.get('url')} (host={self.hostname})"
             )
 
+        # Enriquecimiento con threat intel (opcional)
+        self.enricher = None
+        enriquecimiento_cfg = self.config.get("enriquecimiento", {})
+        if enriquecimiento_cfg.get("enabled", False):
+            from modules.enriquecimiento import Enriquecedor
+            self.enricher = Enriquecedor(enriquecimiento_cfg)
+            self.logger.info("Enriquecimiento (threat intel) activado.")
+
         # Instanciar módulos
         self.alertas = ModuloAlertas(
             self.config.get("alertas", {}),
             hostname=self.hostname,
             forwarder=self.forwarder,
+            enricher=self.enricher,
         )
 
         self.correlacion = MotorCorrelacion(

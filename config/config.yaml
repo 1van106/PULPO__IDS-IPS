@@ -65,3 +65,17 @@ retencion:
   enabled: true
   dias: 90                         # borra alertas con más de N días (0 = sin purga)
   intervalo_horas: 24              # cada cuántas horas se ejecuta la purga
+
+# ── Threat intelligence (enriquecimiento de IPs) ────────────────────
+# Anota cada alerta con país, reputación de AbuseIPDB y detecciones de
+# VirusTotal. Las IPs privadas se omiten por defecto (no tienen reputación).
+# Las claves NO se commitean: déjalas vacías aquí y exporta las variables
+# de entorno ABUSEIPDB_KEY / VIRUSTOTAL_KEY en el host.
+enriquecimiento:
+  enabled: false                   # ponlo en true cuando tengas claves
+  abuseipdb_key: ""                # o variable de entorno ABUSEIPDB_KEY
+  virustotal_key: ""               # o variable de entorno VIRUSTOTAL_KEY
+  geoip: true                      # país vía ip-api.com (sin clave) como respaldo
+  incluir_privadas: false          # true solo para pruebas en lab (IPs 192.168.x)
+  cache_ttl_segundos: 3600         # cachear resultados por IP (rate limits)
+  timeout: 3

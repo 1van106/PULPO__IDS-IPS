@@ -25,6 +25,10 @@ class AlertRecord(Base):
     raw          = Column(String,  nullable=False)
     acknowledged = Column(Boolean, default=False)
     created_at   = Column(DateTime, default=datetime.utcnow)
+    # Threat intelligence (enriquecimiento, opcional)
+    pais         = Column(String,  nullable=True)
+    abuse_score  = Column(Integer, nullable=True)
+    vt_malicious = Column(Integer, nullable=True)
 
 
 engine = create_engine(
@@ -45,9 +49,16 @@ def _migrate() -> None:
     if "alerts" not in inspector.get_table_names():
         return
     columnas = {c["name"] for c in inspector.get_columns("alerts")}
-    if "host" not in columnas:
-        with engine.begin() as conn:
-            conn.execute(text("ALTER TABLE alerts ADD COLUMN host VARCHAR DEFAULT 'local'"))
+    nuevas = {
+        "host":         "ALTER TABLE alerts ADD COLUMN host VARCHAR DEFAULT 'local'",
+        "pais":         "ALTER TABLE alerts ADD COLUMN pais VARCHAR",
+        "abuse_score":  "ALTER TABLE alerts ADD COLUMN abuse_score INTEGER",
+        "vt_malicious": "ALTER TABLE alerts ADD COLUMN vt_malicious INTEGER",
+    }
+    for col, ddl in nuevas.items():
+        if col not in columnas:
+            with engine.begin() as conn:
+                conn.execute(text(ddl))
 
 
 def purgar_antiguas(dias: int) -> int:
@@ -80,6 +91,9 @@ def alert_to_dict(a: AlertRecord) -> dict:
         "raw":          a.raw,
         "acknowledged": a.acknowledged,
         "created_at":   a.created_at.isoformat() if a.created_at else None,
+        "pais":         a.pais,
+        "abuse_score":  a.abuse_score,
+        "vt_malicious": a.vt_malicious,
     }
 
 

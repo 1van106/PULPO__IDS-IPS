@@ -28,16 +28,18 @@ COLORES = {
 
 class ModuloAlertas:
 
-    def __init__(self, config: dict, hostname: str = "local", forwarder=None):
+    def __init__(self, config: dict, hostname: str = "local", forwarder=None, enricher=None):
         """
         config:    sección 'alertas' del config.yaml
         hostname:  nombre de este host (se etiqueta en cada alerta)
         forwarder: Forwarder opcional para reenviar al colector central
+        enricher:  Enriquecedor opcional (threat intel) para anotar la IP
         """
         self.log_file = config.get("log_file", "logs/alertas.log")
         self.consola = config.get("consola", True)
         self.hostname = hostname
         self.forwarder = forwarder
+        self.enricher = enricher
         self._asegurar_directorio()
         init_db()
 
@@ -65,8 +67,16 @@ class ModuloAlertas:
         parsed = parse_raw(mensaje)
         if parsed:
             try:
+                # Threat intel: anotar la IP origen (best-effort, no bloquea si falla)
+                extra = {}
+                if self.enricher and parsed.get("ip"):
+                    try:
+                        extra = self.enricher.enriquecer(parsed["ip"])
+                    except Exception as e:
+                        logger.warning(f"[Alertas] Enriquecimiento falló: {e}")
+
                 db = SessionLocal()
-                record = AlertRecord(**parsed, raw=mensaje, host=self.hostname)
+                record = AlertRecord(**parsed, raw=mensaje, host=self.hostname, **extra)
                 db.add(record)
                 db.commit()
                 db.refresh(record)

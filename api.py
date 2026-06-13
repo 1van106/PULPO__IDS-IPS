@@ -45,6 +45,10 @@ class IngestAlert(BaseModel):
     duracion:  Optional[int] = None
     raw:       str
     acknowledged: Optional[bool] = False
+    # Threat intel (enriquecido por el agente, opcional)
+    pais:         Optional[str] = None
+    abuse_score:  Optional[int] = None
+    vt_malicious: Optional[int] = None
 
 app = FastAPI(title="PULPO API", version="2.0.0", docs_url="/docs", redoc_url=None)
 app.add_middleware(
@@ -134,6 +138,9 @@ def ingest(alert: IngestAlert, _: None = Depends(require_token)) -> dict:
         duracion=alert.duracion,
         raw=alert.raw,
         acknowledged=alert.acknowledged or False,
+        pais=alert.pais,
+        abuse_score=alert.abuse_score,
+        vt_malicious=alert.vt_malicious,
     )
     db.add(record)
     db.commit()
