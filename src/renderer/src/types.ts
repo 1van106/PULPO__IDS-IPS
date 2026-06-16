@@ -3,6 +3,7 @@ export type TipoAlerta = 'BLOQUEO' | 'ALERTA' | 'REGISTRO'
 
 export interface Alert {
   id: string | number
+  host: string
   timestamp: string
   tipo: TipoAlerta
   regla: string
@@ -11,6 +12,18 @@ export interface Alert {
   duracion?: number
   raw: string
   acknowledged?: boolean
+  // ── Threat Intelligence ──────────────────────────────────────────
+  // Presentes en MODO API (pueden venir null si no se pudo enriquecer).
+  // En MODO FICHERO (parseAlert) llegan como undefined → el render lo tolera.
+  pais?: string | null         // ISO-3166 alpha-2 en mayúsculas, p.ej. "DE"
+  abuse_score?: number | null  // AbuseIPDB 0–100
+  vt_malicious?: number | null // nº de motores de VirusTotal que marcan la IP
+}
+
+export interface HostInfo {
+  host: string
+  count: number
+  lastSeen: string
 }
 
 export interface BlockedIP {
@@ -42,6 +55,7 @@ export function parseAlert(raw: string): Alert | null {
   if (!m) return null
   return {
     id: `${Date.now()}-${Math.random()}`,
+    host: 'local',
     timestamp: m[1],
     tipo: m[2] as TipoAlerta,
     regla: m[3],
@@ -49,5 +63,6 @@ export function parseAlert(raw: string): Alert | null {
     severidad: m[5] as Severidad,
     duracion: m[6] ? parseInt(m[6]) : undefined,
     raw: line
+    // pais / abuse_score / vt_malicious quedan undefined en modo fichero
   }
 }
