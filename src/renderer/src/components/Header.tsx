@@ -1,4 +1,6 @@
-import { OctopusIcon, SwapIcon, TrashIcon } from './Icons'
+import { useState } from 'react'
+import { HostInfo } from '../types'
+import { OctopusIcon, ServerIcon, SwapIcon, TrashIcon } from './Icons'
 
 interface HeaderProps {
   logPath: string | null
@@ -6,9 +8,32 @@ interface HeaderProps {
   onChangeFile: () => void
   onClearHistory: () => void
   alertCount: number
+  isApiMode: boolean
+  hosts: HostInfo[]
+  selectedHost: string
+  setSelectedHost: (h: string) => void
+  allHostsValue: string
+  apiUrl: string
+  setApiUrl: (url: string) => void
+  apiToken: string
+  setApiToken: (token: string) => void
 }
 
-export default function Header({ logPath, isMonitoring, onChangeFile, onClearHistory, alertCount }: HeaderProps) {
+export default function Header({
+  logPath, isMonitoring, onChangeFile, onClearHistory, alertCount,
+  isApiMode, hosts, selectedHost, setSelectedHost, allHostsValue,
+  apiUrl, setApiUrl, apiToken, setApiToken
+}: HeaderProps) {
+  const [settingsOpen, setSettingsOpen] = useState(false)
+  const [urlDraft, setUrlDraft] = useState(apiUrl)
+  const [tokenDraft, setTokenDraft] = useState(apiToken)
+
+  const saveSettings = () => {
+    setApiToken(tokenDraft)
+    setApiUrl(urlDraft)          // dispara reconexión
+    setSettingsOpen(false)
+  }
+
   return (
     <header className="header">
       <div className="header-left">
@@ -38,6 +63,21 @@ export default function Header({ logPath, isMonitoring, onChangeFile, onClearHis
       </div>
 
       <div className="header-right">
+        {isApiMode && hosts.length > 0 && (
+          <label className="host-select" title="Filtrar por host">
+            <ServerIcon />
+            <select
+              value={selectedHost}
+              onChange={e => setSelectedHost(e.target.value)}
+            >
+              <option value={allHostsValue}>Todos los hosts ({hosts.length})</option>
+              {hosts.map(h => (
+                <option key={h.host} value={h.host}>{h.host} ({h.count})</option>
+              ))}
+            </select>
+          </label>
+        )}
+
         {alertCount > 0 && (
           <button
             className="btn btn-ghost btn-danger"
@@ -47,9 +87,52 @@ export default function Header({ logPath, isMonitoring, onChangeFile, onClearHis
             <TrashIcon /> Limpiar historial
           </button>
         )}
-        <button className="btn btn-ghost" onClick={onChangeFile}>
-          <SwapIcon /> Cambiar fichero
-        </button>
+
+        {isApiMode ? (
+          <div className="collector-settings">
+            <button
+              className={`btn btn-ghost${settingsOpen ? ' fb-toggle--on' : ''}`}
+              onClick={() => { setUrlDraft(apiUrl); setTokenDraft(apiToken); setSettingsOpen(o => !o) }}
+              title="Configurar colector"
+            >
+              <ServerIcon /> Colector
+            </button>
+            {settingsOpen && (
+              <div className="collector-popover">
+                <label className="cp-field">
+                  <span>URL del colector</span>
+                  <input
+                    type="text"
+                    value={urlDraft}
+                    onChange={e => setUrlDraft(e.target.value)}
+                    placeholder="http://192.168.56.1:8080"
+                    spellCheck={false}
+                    autoComplete="off"
+                  />
+                </label>
+                <label className="cp-field">
+                  <span>Token (opcional)</span>
+                  <input
+                    type="password"
+                    value={tokenDraft}
+                    onChange={e => setTokenDraft(e.target.value)}
+                    placeholder="Bearer token de la API"
+                    spellCheck={false}
+                    autoComplete="off"
+                  />
+                </label>
+                <div className="cp-actions">
+                  <button className="btn btn-ghost" onClick={() => setSettingsOpen(false)}>Cancelar</button>
+                  <button className="btn btn-green" onClick={saveSettings}>Conectar</button>
+                </div>
+              </div>
+            )}
+          </div>
+        ) : (
+          <button className="btn btn-ghost" onClick={onChangeFile}>
+            <SwapIcon /> Cambiar fichero
+          </button>
+        )}
       </div>
     </header>
   )

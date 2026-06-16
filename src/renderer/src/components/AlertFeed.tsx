@@ -2,10 +2,54 @@ import { useState } from 'react'
 import { Alert, Severidad, TipoAlerta } from '../types'
 import { DownloadIcon, FilterIcon } from './Icons'
 
+/* ── Threat-intel helpers ─────────────────────────────────────────────────── */
+
+// "DE" → 🇩🇪  (los 2 caracteres ISO a Regional Indicator Symbols).
+// Devuelve '' si el código es nulo o inválido.
+function flagEmoji(code?: string | null): string {
+  if (!code) return ''
+  const cc = code.trim().toUpperCase()
+  if (!/^[A-Z]{2}$/.test(cc)) return ''
+  return String.fromCodePoint(
+    0x1f1e6 + cc.charCodeAt(0) - 65,
+    0x1f1e6 + cc.charCodeAt(1) - 65
+  )
+}
+
+// Tramo de color del abuse_score (AbuseIPDB 0–100).
+function abuseClass(score: number): string {
+  if (score >= 75) return 'b-abuse-high'   // 75–100  alto / IP maliciosa
+  if (score >= 25) return 'b-abuse-med'    // 25–74   medio
+  return 'b-abuse-low'                      // 1–24    bajo
+}
+
+// Celda "Riesgo": badge de abuse + (opcional) badge de VirusTotal.
+function ThreatCell({ score, vt }: { score?: number | null; vt?: number | null }) {
+  const hasScore = score != null && score > 0
+  const hasVt = vt != null && vt > 0
+  if (!hasScore && !hasVt) return <span className="cell-empty">—</span>
+  return (
+    <span className="intel-group">
+      {hasScore && (
+        <span className={`badge ${abuseClass(score as number)}`} title={`AbuseIPDB ${score}/100`}>
+          <span className="dot" />{score}
+        </span>
+      )}
+      {hasVt && (
+        <span className="badge b-vt" title={`VirusTotal: ${vt} motores maliciosos`}>VT {vt}</span>
+      )}
+    </span>
+  )
+}
+
+/* ── CSV ──────────────────────────────────────────────────────────────────── */
+
 function exportCSV(alerts: Alert[]) {
-  const header = 'timestamp,tipo,regla,ip,severidad,duracion\n'
+  const header = 'host,timestamp,tipo,regla,ip,pais,abuse_score,vt_malicious,severidad,duracion\n'
   const rows = alerts.map(a =>
-    `"${a.timestamp}","${a.tipo}","${a.regla}","${a.ip}","${a.severidad}","${a.duracion ?? ''}"`
+    `"${a.host ?? 'local'}","${a.timestamp}","${a.tipo}","${a.regla}","${a.ip}",` +
+    `"${a.pais ?? ''}","${a.abuse_score ?? ''}","${a.vt_malicious ?? ''}",` +
+    `"${a.severidad}","${a.duracion ?? ''}"`
   ).join('\n')
   const blob = new Blob([header + rows], { type: 'text/csv;charset=utf-8;' })
   const url = URL.createObjectURL(blob)
@@ -15,6 +59,8 @@ function exportCSV(alerts: Alert[]) {
   link.click()
   URL.revokeObjectURL(url)
 }
+
+/* ── Badges de tipo / severidad ───────────────────────────────────────────── */
 
 function TypeBadge({ tipo }: { tipo: TipoAlerta }) {
   const cls = tipo === 'BLOQUEO' ? 'b-bloqueo' : tipo === 'ALERTA' ? 'b-alerta' : 'b-baja'
@@ -27,6 +73,8 @@ function SevBadge({ sev }: { sev: Severidad }) {
   }
   return <span className={`badge ${map[sev]}`}>{sev}</span>
 }
+
+/* ── Filtros (segmented control) ──────────────────────────────────────────── */
 
 type FilterVal = string
 
@@ -72,13 +120,16 @@ function FilterSegment({ label, options, value, onChange }: {
   )
 }
 
+/* ── AlertFeed ────────────────────────────────────────────────────────────── */
+
 interface AlertFeedProps {
   alerts: Alert[]
   freshId: string | number | null
+  showHost?: boolean
   onAcknowledge?: (id: string | number) => Promise<void>
 }
 
-export default function AlertFeed({ alerts, freshId, onAcknowledge }: AlertFeedProps) {
+export default function AlertFeed({ alerts, freshId, showHost, onAcknowledge }: AlertFeedProps) {
   const [filterTipo,  setFilterTipo]  = useState<FilterVal>('ALL')
   const [filterSev,   setFilterSev]   = useState<FilterVal>('ALL')
   const [query,       setQuery]       = useState('')
@@ -96,13 +147,14 @@ export default function AlertFeed({ alerts, freshId, onAcknowledge }: AlertFeedP
     .filter(a => filterSev  === 'ALL' || a.severidad === filterSev)
     .filter(a => !q || a.regla.toLowerCase().includes(q) || a.ip.includes(q))
 
-  const colSpan = onAcknowledge ? 7 : 6
+  // Timestamp · Tipo · Regla · IP · Riesgo · Severidad · Duración  = 7 base
+  const colSpan = 7 + (showHost ? 1 : 0) + (onAcknowledge ? 1 : 0)
 
   return (
     <div className="panel alert-feed">
       <div className="panel-head">
         <h3>Eventos en tiempo real</h3>
-        <span className="panel-count">{visible.length}</span>
+        <span className="panel-count"><b>{visible.length}</b> / {alerts.length} eventos</span>
         <div className="panel-spacer" />
         <button
           className={`btn btn-ghost fb-toggle${activeCount > 0 ? ' fb-toggle--on' : ''}`}
@@ -140,7 +192,7 @@ export default function AlertFeed({ alerts, freshId, onAcknowledge }: AlertFeedP
         <div className="filterbar">
           <FilterSegment label="Tipo"      options={TYPE_OPTS} value={filterTipo} onChange={setFilterTipo} />
           <FilterSegment label="Severidad" options={SEV_OPTS}  value={filterSev}  onChange={setFilterSev}  />
-          <div className="filter-field">
+          <div className="filter-field fb-search-field">
             <span className="field-label">Buscar</span>
             <div className="fb-search-wrap">
               <input
@@ -157,10 +209,6 @@ export default function AlertFeed({ alerts, freshId, onAcknowledge }: AlertFeedP
               )}
             </div>
           </div>
-          <div className="fb-spacer" />
-          <span className="fb-result">
-            <b>{visible.length}</b> / {alerts.length} eventos
-          </span>
           <button
             type="button"
             className="fb-clear"
@@ -177,9 +225,11 @@ export default function AlertFeed({ alerts, freshId, onAcknowledge }: AlertFeedP
           <thead>
             <tr>
               <th style={{ width: '130px' }}>Timestamp</th>
+              {showHost && <th style={{ width: '110px' }}>Host</th>}
               <th style={{ width: '110px' }}>Tipo</th>
               <th>Regla</th>
-              <th style={{ width: '150px' }}>IP origen</th>
+              <th style={{ width: '160px' }}>IP origen</th>
+              <th style={{ width: '128px' }}>Riesgo</th>
               <th style={{ width: '100px' }}>Severidad</th>
               <th style={{ width: '90px', textAlign: 'right' }}>Duración</th>
               {onAcknowledge && <th style={{ width: '50px' }} />}
@@ -195,9 +245,18 @@ export default function AlertFeed({ alerts, freshId, onAcknowledge }: AlertFeedP
                 ].filter(Boolean).join(' ')}
               >
                 <td className="cell-ts">{alert.timestamp}</td>
+                {showHost && <td><span className="badge b-host">{alert.host || 'local'}</span></td>}
                 <td><TypeBadge tipo={alert.tipo} /></td>
                 <td className="cell-rule">{alert.regla}</td>
-                <td className="cell-ip">{alert.ip}</td>
+                <td className="cell-ip">
+                  {alert.pais && (
+                    <span className="ip-flag" title={alert.pais}>{flagEmoji(alert.pais)}</span>
+                  )}
+                  {alert.ip}
+                </td>
+                <td className="cell-intel">
+                  <ThreatCell score={alert.abuse_score} vt={alert.vt_malicious} />
+                </td>
                 <td><SevBadge sev={alert.severidad} /></td>
                 <td className="cell-dur">{alert.duracion ? `${alert.duracion}s` : '—'}</td>
                 {onAcknowledge && (
