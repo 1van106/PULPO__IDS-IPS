@@ -11,13 +11,17 @@ general:
 # ── Modo agente (push) ──────────────────────────────────────────────
 # Si collector.enabled=true, este host actúa de AGENTE: reenvía cada
 # alerta al colector central. Si false, funciona standalone (como siempre).
+# El reenvío es PERSISTENTE: cada alerta se guarda en la SQLite local y se
+# marca como entregada solo cuando el colector la acepta. Si el colector está
+# caído, las pendientes se acumulan y se reenvían en orden al recuperarse
+# (sin pérdida).
 collector:
   enabled: false
   url: "http://192.168.56.1:8080"  # colector central (host del dashboard)
   token: "CHANGEME"                # debe coincidir con api.token del colector
   timeout: 3                       # segundos de espera por POST
-  reintentos: 3                    # nº de intentos si el colector no responde
-  backoff_base: 2                  # segundos base del backoff exponencial (2, 4, 8...)
+  replay_interval: 30              # cada cuántos seg. se reintentan las pendientes
+  batch: 200                       # máx. alertas reenviadas por ciclo
 
 ingesta:
   sources:

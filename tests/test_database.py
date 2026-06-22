@@ -17,7 +17,8 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 os.environ["PULPO_DB"] = os.path.join(tempfile.gettempdir(), "pulpo_test.db")
 
 from database import (  # noqa: E402
-    AlertRecord, SessionLocal, alert_to_dict, init_db, parse_raw, purgar_antiguas,
+    AlertRecord, SessionLocal, alert_to_dict, init_db, marcar_reenviadas,
+    parse_raw, pendientes_reenvio, purgar_antiguas,
 )
 
 
@@ -74,6 +75,45 @@ class TestRetencion(unittest.TestCase):
     def test_purga_cero_no_borra(self):
         self._insertar(datetime.utcnow() - timedelta(days=100))
         self.assertEqual(purgar_antiguas(0), 0)
+
+
+class TestReenvioPendientes(unittest.TestCase):
+    """Cola persistente del forwarder: pendientes y marcado de entregadas."""
+
+    def setUp(self):
+        init_db()
+        db = SessionLocal()
+        db.query(AlertRecord).delete()
+        db.commit()
+        db.close()
+
+    def _insertar(self, forwarded=False):
+        db = SessionLocal()
+        rec = AlertRecord(
+            host="t", timestamp="x", tipo="ALERTA", regla="R",
+            ip="1.1.1.1", severidad="ALTA", raw="r", forwarded=forwarded,
+        )
+        db.add(rec)
+        db.commit()
+        db.refresh(rec)
+        rid = rec.id
+        db.close()
+        return rid
+
+    def test_pendientes_solo_no_reenviadas(self):
+        id1 = self._insertar(forwarded=False)
+        self._insertar(forwarded=True)
+        self.assertEqual([p["id"] for p in pendientes_reenvio()], [id1])
+
+    def test_pendientes_orden_cronologico(self):
+        ids = [self._insertar(forwarded=False) for _ in range(3)]
+        self.assertEqual([p["id"] for p in pendientes_reenvio()], sorted(ids))
+
+    def test_marcar_reenviadas_vacia_pendientes(self):
+        id1 = self._insertar(forwarded=False)
+        id2 = self._insertar(forwarded=False)
+        marcar_reenviadas([id1, id2])
+        self.assertEqual(pendientes_reenvio(), [])
 
 
 class TestThreatIntelColumnas(unittest.TestCase):

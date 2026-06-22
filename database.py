@@ -29,6 +29,9 @@ class AlertRecord(Base):
     pais         = Column(String,  nullable=True)
     abuse_score  = Column(Integer, nullable=True)
     vt_malicious = Column(Integer, nullable=True)
+    # Reenvío al colector (modo agente): False = pendiente de entregar.
+    # En el colector/standalone es irrelevante (nadie lo consulta).
+    forwarded    = Column(Boolean, default=False, index=True)
 
 
 engine = create_engine(
@@ -54,6 +57,10 @@ def _migrate() -> None:
         "pais":         "ALTER TABLE alerts ADD COLUMN pais VARCHAR",
         "abuse_score":  "ALTER TABLE alerts ADD COLUMN abuse_score INTEGER",
         "vt_malicious": "ALTER TABLE alerts ADD COLUMN vt_malicious INTEGER",
+        # DEFAULT 1: las alertas que ya existían se consideran entregadas, para
+        # no reenviar todo el histórico al colector tras actualizar. Las filas
+        # nuevas las inserta el ORM con su default Python (False = pendiente).
+        "forwarded":    "ALTER TABLE alerts ADD COLUMN forwarded BOOLEAN DEFAULT 1",
     }
     for col, ddl in nuevas.items():
         if col not in columnas:
@@ -95,6 +102,40 @@ def alert_to_dict(a: AlertRecord) -> dict:
         "abuse_score":  a.abuse_score,
         "vt_malicious": a.vt_malicious,
     }
+
+
+def pendientes_reenvio(limit: int = 200) -> list:
+    """Alertas locales aún no reenviadas al colector, en orden cronológico.
+
+    Devuelve dicts listos para POST /api/ingest (incluyen `id` para marcarlas
+    como entregadas después).
+    """
+    db = SessionLocal()
+    try:
+        registros = (
+            db.query(AlertRecord)
+            .filter(AlertRecord.forwarded.is_(False))
+            .order_by(AlertRecord.id.asc())
+            .limit(limit)
+            .all()
+        )
+        return [alert_to_dict(a) for a in registros]
+    finally:
+        db.close()
+
+
+def marcar_reenviadas(ids: list) -> None:
+    """Marca como entregadas (forwarded=True) las alertas con esos ids."""
+    if not ids:
+        return
+    db = SessionLocal()
+    try:
+        db.query(AlertRecord).filter(AlertRecord.id.in_(ids)).update(
+            {AlertRecord.forwarded: True}, synchronize_session=False
+        )
+        db.commit()
+    finally:
+        db.close()
 
 
 _RAW_RE = re.compile(
