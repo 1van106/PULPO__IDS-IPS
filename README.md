@@ -9,13 +9,19 @@
 <p align="center"><b>Sistema de Detección y Prevención de Intrusiones · IDS / IPS</b></p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Python-3.13-3776AB?style=flat-square&logo=python&logoColor=white&labelColor=1a1a2e" />
-  <img src="https://img.shields.io/badge/FastAPI-009688?style=flat-square&logo=fastapi&logoColor=white&labelColor=1a1a2e" />
-  <img src="https://img.shields.io/badge/SQLAlchemy-D71F00?style=flat-square&logo=sqlalchemy&logoColor=white&labelColor=1a1a2e" />
-  <img src="https://img.shields.io/badge/SQLite-003B57?style=flat-square&logo=sqlite&logoColor=white&labelColor=1a1a2e" />
-  <img src="https://img.shields.io/badge/Electron-32-47848F?style=flat-square&logo=electron&logoColor=white&labelColor=1a1a2e" />
-  <img src="https://img.shields.io/badge/React-18-61DAFB?style=flat-square&logo=react&logoColor=white&labelColor=1a1a2e" />
-  <img src="https://img.shields.io/badge/TypeScript-5-3178C6?style=flat-square&logo=typescript&logoColor=white&labelColor=1a1a2e" />
+  <img src="https://img.shields.io/badge/Python-3.13-3776AB?style=for-the-badge&logo=python&logoColor=white&labelColor=1a1a2e" />
+  <img src="https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white&labelColor=1a1a2e" />
+  <img src="https://img.shields.io/badge/SQLite-003B57?style=for-the-badge&logo=sqlite&logoColor=white&labelColor=1a1a2e" />
+  <img src="https://img.shields.io/badge/Electron-47848F?style=for-the-badge&logo=electron&logoColor=white&labelColor=1a1a2e" />
+  <img src="https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=react&logoColor=black&labelColor=1a1a2e" />
+  <img src="https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white&labelColor=1a1a2e" />
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/licencia-MIT-22b5bf?style=flat-square&labelColor=1a1a2e" />
+  <img src="https://img.shields.io/badge/plataforma-Linux%20%C2%B7%20Windows-FCC624?style=flat-square&logo=linux&logoColor=black&labelColor=1a1a2e" />
+  <img src="https://img.shields.io/badge/arquitectura-multihost-9b5de5?style=flat-square&labelColor=1a1a2e" />
+  <img src="https://img.shields.io/badge/threat%20intel-AbuseIPDB%20%C2%B7%20VirusTotal-f15bb5?style=flat-square&labelColor=1a1a2e" />
 </p>
 
 ---
@@ -29,34 +35,34 @@
 
 ---
 
-## Componentes
+## 📦 Componentes
 
 | Módulo | Descripción |
 |---|---|
-| **[`engine/`](engine/)** — Motor de detección | Pipeline de análisis, reglas, correlación, respuesta y API REST. Es el componente que se despliega en cada sensor. → [Documentación](engine/README.md) |
-| **[`dashboard/`](dashboard/)** — Panel de control | Aplicación de escritorio que visualiza alertas, IPs bloqueadas y métricas en tiempo real. → [Documentación](dashboard/README.md) |
+| 🛡️ **[`engine/`](engine/)** — Motor de detección | Pipeline de análisis, reglas, correlación, respuesta y API REST. Es el componente que se despliega en cada sensor. → [Documentación](engine/README.md) |
+| 📊 **[`dashboard/`](dashboard/)** — Panel de control | Aplicación de escritorio que visualiza alertas, IPs bloqueadas y métricas en tiempo real. → [Documentación](dashboard/README.md) |
 
 ---
 
-## Capacidades
+## ✨ Capacidades
 
 | | |
 |---|---|
-| **Pipeline de 5 etapas** | Ingesta → motor de reglas → correlación → respuesta → alertas, encadenadas mediante *callbacks* |
-| **Detección por reglas** | Reglas declarativas en YAML (fuerza bruta SSH, inyección SQL, XSS, path traversal, command injection, escaneo web, abuso de métodos HTTP…), cada una con su umbral y ventana temporal |
-| **Correlación temporal** | Agrupa eventos por IP dentro de una ventana configurable para detectar patrones (p. ej. *N* fallos en *M* segundos) antes de disparar |
-| **Respuesta automática (IPS)** | Bloqueo de IPs vía `iptables` en modo real o simulación, lista blanca con soporte **CIDR** y desbloqueo automático por tiempo |
-| **Arquitectura multihost** | Los sensores reenvían sus alertas a un colector central mediante API autenticada con *Bearer token*; cada alerta se etiqueta con su host de origen |
-| **Reenvío sin pérdida** | Cola persistente: si el colector no está disponible, las alertas se almacenan localmente y se reenvían en orden al recuperarse — **no se pierde ninguna** |
-| **Threat intelligence** | Enriquecimiento de cada IP con país (GeoIP), reputación de **AbuseIPDB** y detecciones de **VirusTotal**, con caché para respetar los *rate limits* |
-| **Notificaciones** | Avisos por **Slack**, **Telegram** y **correo** según umbral de severidad |
-| **Retención configurable** | Purga periódica de alertas antiguas según política de retención |
-| **API REST + WebSocket** | API (FastAPI) para consultar alertas, hosts y estadísticas, y *stream* de alertas en vivo |
-| **Persistencia** | Almacenamiento en SQLite con migración automática de esquema |
+| 🧩 **Pipeline de 5 etapas** | Ingesta → motor de reglas → correlación → respuesta → alertas, encadenadas mediante *callbacks* |
+| 📜 **Detección por reglas** | Reglas declarativas en YAML (fuerza bruta SSH, inyección SQL, XSS, path traversal, command injection, escaneo web…), cada una con su umbral y ventana temporal |
+| ⏱️ **Correlación temporal** | Agrupa eventos por IP dentro de una ventana configurable para detectar patrones (*N* fallos en *M* segundos) antes de disparar |
+| 🚫 **Respuesta automática (IPS)** | Bloqueo de IPs vía `iptables` en modo real o simulación, lista blanca con soporte **CIDR** y desbloqueo automático por tiempo |
+| 🌐 **Arquitectura multihost** | Los sensores reenvían sus alertas a un colector central mediante API autenticada con *Bearer token*; cada alerta se etiqueta con su host de origen |
+| 📨 **Reenvío sin pérdida** | Cola persistente: si el colector no está disponible, las alertas se almacenan localmente y se reenvían en orden al recuperarse — **no se pierde ninguna** |
+| 🌍 **Threat intelligence** | Enriquecimiento de cada IP con país (GeoIP), reputación de **AbuseIPDB** y detecciones de **VirusTotal**, con caché para respetar los *rate limits* |
+| 🔔 **Notificaciones** | Avisos por **Slack**, **Telegram** y **correo** según umbral de severidad |
+| 🗄️ **Retención configurable** | Purga periódica de alertas antiguas según política de retención |
+| 🔌 **API REST + WebSocket** | API (FastAPI) para consultar alertas, hosts y estadísticas, y *stream* de alertas en vivo |
+| 💾 **Persistencia** | Almacenamiento en SQLite con migración automática de esquema |
 
 ---
 
-## Arquitectura
+## 🏗️ Arquitectura
 
 ```
         Sensores / Agentes                          Nodo colector
@@ -78,7 +84,10 @@ Cada **agente** ejecuta el motor de detección y reenvía sus alertas al **colec
 
 ---
 
-## Formato de alertas
+## 🧾 Formato de alertas
+
+> [!TIP]
+> El motor genera y procesa líneas con el siguiente formato:
 
 ```
 [2026-02-25 10:15:32] BLOQUEO | Regla: SSH_BRUTEFORCE    | IP: 203.0.113.10  | Severidad: ALTA  | Duración: 300s
@@ -90,16 +99,23 @@ Cada **agente** ejecuta el motor de detección y reenvía sus alertas al **colec
 
 ---
 
-## Stack tecnológico
+## 🧰 Stack tecnológico
 
-| Componente | Tecnologías |
-|---|---|
-| **Motor** | Python · FastAPI · SQLAlchemy · SQLite · PyYAML · Requests |
-| **Dashboard** | Electron · React · TypeScript · Vite · Recharts |
+| Tecnología | Componente | Uso |
+|---|---|---|
+| <img src="https://img.shields.io/badge/Python-3776AB?style=flat-square&logo=python&logoColor=white" /> | Motor | Lenguaje del motor de detección |
+| <img src="https://img.shields.io/badge/FastAPI-009688?style=flat-square&logo=fastapi&logoColor=white" /> | Motor | API REST + WebSocket |
+| <img src="https://img.shields.io/badge/SQLAlchemy-D71F00?style=flat-square&logo=sqlalchemy&logoColor=white" /> | Motor | ORM y migraciones |
+| <img src="https://img.shields.io/badge/SQLite-003B57?style=flat-square&logo=sqlite&logoColor=white" /> | Motor | Persistencia de alertas |
+| <img src="https://img.shields.io/badge/Electron-47848F?style=flat-square&logo=electron&logoColor=white" /> | Dashboard | Runtime de escritorio |
+| <img src="https://img.shields.io/badge/React-61DAFB?style=flat-square&logo=react&logoColor=black" /> | Dashboard | UI declarativa |
+| <img src="https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white" /> | Dashboard | Tipado estático |
+| <img src="https://img.shields.io/badge/Vite-646CFF?style=flat-square&logo=vite&logoColor=white" /> | Dashboard | Build + HMR |
+| <img src="https://img.shields.io/badge/Recharts-22b5bf?style=flat-square&logo=chartdotjs&logoColor=white" /> | Dashboard | Gráficos de análisis |
 
 ---
 
-## Puesta en marcha
+## 🚀 Puesta en marcha
 
 **Motor de detección** (en cada sensor):
 
@@ -118,7 +134,8 @@ npm run dev             # desarrollo (abre la ventana Electron)
 npm run package:linux   # empaqueta AppImage / .deb
 ```
 
-> El comportamiento del motor —reglas, modo de respuesta, multihost, threat intelligence, notificaciones y retención— se configura en [`engine/config/config.yaml`](engine/config/config.yaml). Las claves de API y credenciales se cargan por variables de entorno, nunca se versionan.
+> [!IMPORTANT]
+> El comportamiento del motor —reglas, modo de respuesta, multihost, threat intelligence, notificaciones y retención— se configura en [`engine/config/config.yaml`](engine/config/config.yaml). Las **claves de API y credenciales** se cargan por variables de entorno; **nunca se versionan**.
 
 ---
 
