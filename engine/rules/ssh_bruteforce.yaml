@@ -1,0 +1,59 @@
+# ============================================================
+#  Reglas: Ataques SSH
+# ============================================================
+
+rules:
+  - id: "SSH_BRUTEFORCE"
+    nombre: "Fuerza bruta SSH"
+    descripcion: "Detecta múltiples fallos de autenticación SSH desde la misma IP"
+    fuente: "auth_log"
+    severidad: "ALTA"
+    patron: 'Failed password for .* from (?P<ip>\d+\.\d+\.\d+\.\d+) port'
+    grupo_ip: "ip"
+    umbral: 5
+    ventana_segundos: 60
+    accion: "bloquear_ip"
+
+  - id: "SSH_INVALID_USER"
+    nombre: "Usuario inválido SSH"
+    descripcion: "Detecta intentos de login con usuarios inexistentes"
+    fuente: "auth_log"
+    severidad: "MEDIA"
+    patron: 'Invalid user \S+ from (?P<ip>\d+\.\d+\.\d+\.\d+)'
+    grupo_ip: "ip"
+    umbral: 3
+    ventana_segundos: 60
+    accion: "bloquear_ip"
+
+  - id: "SSH_ROOT_LOGIN"
+    nombre: "Intento login root SSH"
+    descripcion: "Detecta intentos de acceso directo como root"
+    fuente: "auth_log"
+    severidad: "ALTA"
+    patron: 'Failed password for root from (?P<ip>\d+\.\d+\.\d+\.\d+)'
+    grupo_ip: "ip"
+    umbral: 2
+    ventana_segundos: 60
+    accion: "bloquear_ip"
+
+  - id: "SSH_PENALTY"
+    nombre: "Penalización OpenSSH"
+    descripcion: "Detecta conexiones bloqueadas por el sistema de penalización de OpenSSH 10+"
+    fuente: "auth_log"
+    severidad: "ALTA"
+    patron: 'drop connection #\d+ from \[(?P<ip>\d+\.\d+\.\d+\.\d+)\].*penalty'
+    grupo_ip: "ip"
+    umbral: 5
+    ventana_segundos: 60
+    accion: "bloquear_ip"
+
+  - id: "SSH_RAPID_DISCO"
+    nombre: "Desconexiones SSH rápidas"
+    descripcion: "Detecta múltiples conexiones que se cierran antes de autenticar (posible scanner)"
+    fuente: "auth_log"
+    severidad: "BAJA"
+    patron: 'Connection closed by (?:invalid user \S+ )?(?P<ip>\d+\.\d+\.\d+\.\d+) port \d+ \[preauth\]'
+    grupo_ip: "ip"
+    umbral: 6
+    ventana_segundos: 30
+    accion: "alertar"
