@@ -1,0 +1,107 @@
+# ============================================================
+#  LogClassifier - Configuración Principal
+# ============================================================
+
+general:
+  log_level: INFO                  # DEBUG | INFO | WARNING | ERROR
+  poll_interval: 1                 # segundos entre lecturas de log
+  timezone: "Europe/Madrid"
+  hostname: "auto"                 # "auto" => socket.gethostname(); o un nombre fijo
+
+# ── Modo agente (push) ──────────────────────────────────────────────
+# Si collector.enabled=true, este host actúa de AGENTE: reenvía cada
+# alerta al colector central. Si false, funciona standalone (como siempre).
+# El reenvío es PERSISTENTE: cada alerta se guarda en la SQLite local y se
+# marca como entregada solo cuando el colector la acepta. Si el colector está
+# caído, las pendientes se acumulan y se reenvían en orden al recuperarse
+# (sin pérdida).
+collector:
+  enabled: false
+  url: "http://192.168.56.1:8080"  # colector central (host del dashboard)
+  token: "CHANGEME"                # debe coincidir con api.token del colector
+  timeout: 3                       # segundos de espera por POST
+  replay_interval: 30              # cada cuántos seg. se reintentan las pendientes
+  batch: 200                       # máx. alertas reenviadas por ciclo
+
+ingesta:
+  sources:
+    - name: "auth_log"
+      path: "logs/auth.log"
+      type: "file"
+      enabled: true
+    - name: "syslog"
+      path: "logs/syslog.log"
+      type: "file"
+      enabled: true
+
+motor_reglas:
+  rules_dir: "rules/"              # directorio con ficheros .yaml de reglas
+
+correlacion:
+  window_seconds: 60               # ventana temporal para contar eventos
+  cleanup_interval: 120            # cada cuántos segundos limpiar eventos viejos
+
+respuesta:
+  enabled: true
+  modo: "simulacion"               # "simulacion" | "real"
+  # En modo real se ejecutan iptables/nftables
+  # En modo simulacion solo se registra la acción
+  bloqueo_duracion_segundos: 300   # tiempo que permanece bloqueada una IP
+  whitelist_ips:
+    - "127.0.0.1"
+    - "192.168.1.1"
+
+alertas:
+  log_file: "logs/alertas.log"
+  consola: true
+
+api:
+  enabled: true
+  host: "0.0.0.0"
+  port: 8080
+  token: ""                        # si se define, exige Authorization: Bearer <token>
+                                   # en endpoints de escritura (/api/ingest, DELETE, acknowledge)
+
+# ── Retención de datos ──────────────────────────────────────────────
+# Purga periódica de alertas antiguas para no llenar la base de datos.
+# (Web: 90 días Pro / 7 días Community)
+retencion:
+  enabled: true
+  dias: 90                         # borra alertas con más de N días (0 = sin purga)
+  intervalo_horas: 24              # cada cuántas horas se ejecuta la purga
+
+# ── Threat intelligence (enriquecimiento de IPs) ────────────────────
+# Anota cada alerta con país, reputación de AbuseIPDB y detecciones de
+# VirusTotal. Las IPs privadas se omiten por defecto (no tienen reputación).
+# Las claves NO se commitean: déjalas vacías aquí y exporta las variables
+# de entorno ABUSEIPDB_KEY / VIRUSTOTAL_KEY en el host.
+enriquecimiento:
+  enabled: false                   # ponlo en true cuando tengas claves
+  abuseipdb_key: ""                # o variable de entorno ABUSEIPDB_KEY
+  virustotal_key: ""               # o variable de entorno VIRUSTOTAL_KEY
+  geoip: true                      # país vía ip-api.com (sin clave) como respaldo
+  incluir_privadas: false          # true solo para pruebas en lab (IPs 192.168.x)
+  cache_ttl_segundos: 3600         # cachear resultados por IP (rate limits)
+  timeout: 3
+
+# ── Notificaciones ──────────────────────────────────────────────────
+# Avisa por Slack/Telegram/email cuando una alerta alcanza el umbral de
+# severidad. Secretos: déjalos vacíos y usa variables de entorno
+# (SLACK_WEBHOOK_URL, TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID, SMTP_PASSWORD).
+notificaciones:
+  enabled: false
+  umbral_severidad: "ALTA"         # BAJA | MEDIA | ALTA | CRITICA
+  timeout: 5
+  slack:
+    webhook_url: ""                # o variable SLACK_WEBHOOK_URL
+  telegram:
+    bot_token: ""                  # o variable TELEGRAM_BOT_TOKEN
+    chat_id: ""                    # o variable TELEGRAM_CHAT_ID
+  email:
+    smtp_host: ""                  # ej. smtp.gmail.com (vacío = email off)
+    smtp_port: 587
+    tls: true
+    usuario: ""
+    password: ""                   # o variable SMTP_PASSWORD
+    desde: ""
+    para: ""
