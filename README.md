@@ -36,7 +36,8 @@
 | **Auto-carga al iniciar** | Detecta la ruta del log automáticamente sin intervención del usuario |
 | **Persistencia de historial** | Las alertas se guardan en disco (`alerts.ndjson`); el historial se recupera entre sesiones sin que el IDS esté corriendo |
 | **Panel de análisis** | Timeline de los últimos 30 min, gráfico de distribución por severidad y top de reglas disparadas |
-| **Feed de alertas** | Tabla en vivo con tipo, regla, IP, severidad y timestamp; filas nuevas con flash de color |
+| **Feed de alertas** | Tabla en vivo con tipo, regla, IP (con bandera de país), riesgo, severidad y timestamp; filas nuevas con flash de color |
+| **Threat intelligence** | Columna de riesgo con score de AbuseIPDB y detecciones de VirusTotal por IP, y país de origen vía GeoIP |
 | **Exportar a CSV** | Descarga todas las alertas visibles como `.csv` con un clic |
 | **Panel de IPs bloqueadas** | Agrupa hits por IP con la regla que los disparó y contador de ocurrencias |
 | **Estadísticas** | Tarjetas de resumen con total, bloqueos, alertas y desglose por severidad |
